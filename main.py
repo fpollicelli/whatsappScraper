@@ -1,0 +1,288 @@
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+import time ; import base64 ; import os
+from datetime import datetime
+import urllib.request
+
+WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
+SAVE_MEDIA = True
+#LAST_MESSAGES = 100  # implementarli tutti
+message_dic = {}
+
+options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
+options.add_experimental_option("prefs", {
+  "download.default_directory": r"C:\Users\Routi\Download",
+  "download.prompt_for_download": False,
+  "download.directory_upgrade": True,
+  "safebrowsing.enabled": True
+})
+options.add_argument("--remote-debugging-port=9222")
+options.add_argument(
+    "user-data-dir=C:\\Users\\Routi\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+
+driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
+
+# apre whatsapp nel browser
+driver.get('http://web.whatsapp.com')
+wait = WebDriverWait(driver, 600)
+time.sleep(15)
+
+
+def readMessages(name):
+    message_dic[name] = []
+    try:
+        imageProfile = driver.find_element_by_xpath("//*[@id='main']/header/div[1]/div/img")  # get immagine profilo
+        message_dic[name].append(imageProfile.get_attribute('src'))  # append immagine profilo
+    except:  # se l'immagine non è presente (come nelle chat broadcast), ne metto una di default
+        message_dic[name].append(
+            'https://img.favpng.com/8/18/10/broadcast-icon-png-favpng-ETMe9P4W42EtfnqyyGjrw39Q4.jpg')  # append immagine profilo
+
+    #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
+    trovato = False
+    while trovato == False:
+        try:
+            element = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div/div[2]/div[2]/div/div/div/span/span")
+            trovato = True
+        except:
+            driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
+            trovato = False
+    #driver.execute_script("return arguments[0].scrollIntoView(true);", element)
+
+    messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
+    #messageContainer = messageContainer[-1 * LAST_MESSAGES:] #se si vogliono meno messaggi
+    for messages in messageContainer:
+
+        try:
+            message = messages.find_element_by_xpath(
+                ".//span[contains(@class,'selectable-text invisible-space copyable-text')]"
+            ).text
+            emojis = messages.find_elements_by_xpath(
+                ".//img[contains(@class,'selectable-text invisible-space copyable-text')]")
+
+            if len(emojis) != 0:
+                for emoji in emojis:
+                    message = message + emoji.get_attribute("data-plain-text")
+            info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+            info = info.get_attribute("data-pre-plain-text")
+            finalMessage = info + message
+            print(finalMessage)
+            message_dic[name].append(finalMessage)
+
+        except NoSuchElementException:  # solo emoji nel messaggio
+            try:
+                for emoji in messages.find_elements_by_xpath(
+                        ".//img[contains(@class,'selectable-text invisible-space copyable-text')]"
+                ):
+                    info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                    info = info.get_attribute("data-pre-plain-text")
+                    message = emoji.get_attribute("data-plain-text")
+                    finalMessage = info + message
+                    print(finalMessage)
+                    message_dic[name].append(finalMessage)
+
+            except NoSuchElementException:
+                pass
+
+    return
+
+
+def getChatLabels():
+    chatLabels = []
+    recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
+    for label in recentList:
+        chatLabels.append(label)
+    chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
+    return chatLabels
+
+
+def iterChatList(chatLabels):
+    for chat in chatLabels:
+        chat.click()
+        time.sleep(WAIT_FOR_CHAT_TO_LOAD)
+        label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
+        chatName = label[0].get_attribute('title')
+        if len(chatName) == 0:
+            label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span/span') # se il nome contiene un'emoji, va nello span di sotto
+            chatName = label[0].get_attribute('title')
+        readMessages(chatName)
+        if SAVE_MEDIA == True:
+            saveMedia(chatName)
+    return
+
+def saveMedia(name):
+    menu = driver.find_element_by_xpath("(//div[@title=\"Menu\"])[2]")
+    menu.click()
+    # time.sleep(20)
+    try:
+        info = driver.find_element_by_xpath("//div[@title=\"Info gruppo\"]")
+    except:
+        info = driver.find_element_by_xpath("//div[@title=\"Info contatto\"]")
+    info.click()
+    media_xpath = '//span[text()="Media, link e documenti"]'
+    media = driver.find_element_by_xpath(media_xpath)
+    media.click()
+    saveImgVidAud(name)
+    saveDoc(name)
+
+def saveDoc(name):
+    docs_xpath = '//button[text()="Documenti"]'
+    docs = driver.find_element_by_xpath(docs_xpath)
+    docs.click()
+    dir = 'Scraped/' + name + '/Docs/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    try:
+        noMedia_xpath ="//span[text()='Nessun documento']"
+        time.sleep(5)
+        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
+        noMedia = True
+    except:
+        noMedia = False
+
+    if noMedia == False:
+        try:
+            doc_list= driver.find_elements_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div/div/a/div[1]")
+        except:
+            print("Impossibile scaricare il file")
+        for document in doc_list :
+            a_tag = document.find_element_by_xpath("..") #prende il tag <a> superiore che contiene il nome del file
+            fileName = a_tag.get_attribute("Title")
+            fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
+            document.click()
+            time.sleep(5)
+            move_to_download_folder("C:\\Users\\Routi\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
+    return
+
+
+def move_to_download_folder(downloadPath, FileName, dest):
+    got_file = False
+    while got_file == False:
+        try:
+            currentFile = downloadPath+FileName
+            got_file = True
+        except:
+            print ("File has not finished downloading")
+            time.sleep(20)
+    fileDestination = dest+FileName
+    os.rename(currentFile, fileDestination)
+    return
+
+def saveImgVidAud(name):
+    dir = 'Scraped/'+ name + '/Media/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    try:
+        noMedia_xpath ="//span[text()='Nessun media']"
+        time.sleep(5)
+        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
+        noMedia = True
+    except:
+        noMedia = False
+
+    if noMedia == False:
+        try:
+            image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div/div[1]/div" #1 media
+            image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+        except:
+            try:
+                image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]" #2 media
+                image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+            except:
+                image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div" #diversi media
+                image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+
+        lastimg = 'false'
+        driver.execute_script("arguments[0].click();", image)
+
+        while (lastimg == 'false'):
+            i = datetime.today().strftime('%Y_%m_%d_%H_%M_%S')
+            try:
+                image_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div[2]/img"
+                image = driver.find_element_by_xpath(image_xpath)
+                mediaType = '.jpg'
+            except:
+                try:
+                    image_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div[1]/video"
+                    image = driver.find_element_by_xpath(image_xpath)
+                    mediaType = '.mp4'
+                except:
+                    try:
+                        image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]"
+                        image = driver.find_element_by_xpath(image_xpath)
+                        audio_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/audio"
+                        image = driver.find_element_by_xpath(audio_xpath)
+                        mediaType = '.mpeg'
+                    except:
+                        noMedia = True
+                        print("altro tipo di media")
+            if noMedia == False:
+                image_src = image.get_attribute("src")
+                final_image = get_file_content_chrome(driver, image_src)
+                time.sleep(5)
+                filename = dir + str(i) + mediaType
+                base64_img_bytes = final_image.encode('utf-8')
+                with open(filename, 'wb') as file_to_save:
+                    decoded_image_data = base64.decodebytes(base64_img_bytes)
+                    file_to_save.write(decoded_image_data)
+                nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                lastimg = nextButton.get_attribute("aria-disabled")
+                nextButton.click()
+            else:
+                lastimg = True
+        close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
+        close_image_button.click()
+
+
+def get_file_content_chrome(driver, uri):
+    result = driver.execute_async_script("""
+    var uri = arguments[0];
+    var callback = arguments[1];
+    var toBase64 = function(buffer){for(var r,n=new Uint8Array(buffer),t=n.length,a=new Uint8Array(4*Math.ceil(t/3)),i=new Uint8Array(64),o=0,c=0;64>c;++c)i[c]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".charCodeAt(c);for(c=0;t-t%3>c;c+=3,o+=4)r=n[c]<<16|n[c+1]<<8|n[c+2],a[o]=i[r>>18],a[o+1]=i[r>>12&63],a[o+2]=i[r>>6&63],a[o+3]=i[63&r];return t%3===1?(r=n[t-1],a[o]=i[r>>2],a[o+1]=i[r<<4&63],a[o+2]=61,a[o+3]=61):t%3===2&&(r=(n[t-2]<<8)+n[t-1],a[o]=i[r>>10],a[o+1]=i[r>>4&63],a[o+2]=i[r<<2&63],a[o+3]=61),new TextDecoder("ascii").decode(a)};
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'arraybuffer';
+    xhr.onload = function(){ callback(toBase64(xhr.response)) };
+    xhr.onerror = function(){ callback(xhr.status) };
+    xhr.open('GET', uri);
+    xhr.send();
+    """, uri)
+    if type(result) == int:
+        raise Exception("Request failed with status %s" % result)
+    return result
+
+
+def createFile():
+    keys = message_dic.keys()
+    for key in keys:
+        f = open(key+'.txt', 'w', encoding='utf-8')
+        for message in message_dic.get(key):
+            f.write(message)
+            f.write('\n')
+    f.close()
+    return
+
+
+if __name__ == '__main__':
+    choise = input ("Vuoi caricare la lista dei contatti o vuoi fare scraping di ogni contatto?")
+    if choise == 'ogni contatto':
+        chatLabels = getChatLabels() # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
+    else:
+        file = input("Inserisci il percorso del file csv")
+        # TODO: TROVARE FILE DA NOME PASSATO COME INPUT
+        getChatLabels = [] ; getChatLabels = str(file) # TODO: DA FILE A LISTA DI CONTATTI, IMPLEMEMTARE LISTA CONTATTI COME DICT
+
+    iterChatList(chatLabels)  # scorrere la lista e copia la chat
+    createFile()
+    driver.close() #TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
+    # TODO:
+    # IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
+    # AGGIUNGERE CHROMEDRIVER NELLA STESSA CARTELLA DEL PROGETTO!!!!!! <----
+    # IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON
+    # CARICARE LISTA DI CONTATTI DA CSV
+    # RICHIESTE A LINEA DI COMANDO O GRAFICA (?)
+    # IMPOLEMENTARE IN AZURE (?)
+    # registrazioni vocali in, registrazioni vocali out
+    # salvare i messaggi nel file man mano che si leggono, non alal fine
+    # doppio hash degli output
+
