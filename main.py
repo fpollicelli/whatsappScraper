@@ -8,7 +8,6 @@ import urllib.request
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
 SAVE_MEDIA = True
-#LAST_MESSAGES = 100  # implementarli tutti
 message_dic = {}
 
 options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -32,13 +31,16 @@ time.sleep(15)
 
 def readMessages(name):
     message_dic[name] = []
+    f = open(name + '.txt', 'w', encoding='utf-8')
     try:
         imageProfile = driver.find_element_by_xpath("//*[@id='main']/header/div[1]/div/img")  # get immagine profilo
         message_dic[name].append(imageProfile.get_attribute('src'))  # append immagine profilo
+        f.write(imageProfile.get_attribute('src'))
     except:  # se l'immagine non è presente (come nelle chat broadcast), ne metto una di default
         message_dic[name].append(
             'https://img.favpng.com/8/18/10/broadcast-icon-png-favpng-ETMe9P4W42EtfnqyyGjrw39Q4.jpg')  # append immagine profilo
-
+        f.write('https://img.favpng.com/8/18/10/broadcast-icon-png-favpng-ETMe9P4W42EtfnqyyGjrw39Q4.jpg')
+    f.write('\n')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
     while trovato == False:
@@ -51,9 +53,7 @@ def readMessages(name):
     #driver.execute_script("return arguments[0].scrollIntoView(true);", element)
 
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
-    #messageContainer = messageContainer[-1 * LAST_MESSAGES:] #se si vogliono meno messaggi
     for messages in messageContainer:
-
         try:
             message = messages.find_element_by_xpath(
                 ".//span[contains(@class,'selectable-text invisible-space copyable-text')]"
@@ -68,6 +68,8 @@ def readMessages(name):
             info = info.get_attribute("data-pre-plain-text")
             finalMessage = info + message
             print(finalMessage)
+            f.write(finalMessage)
+            f.write('\n')
             message_dic[name].append(finalMessage)
 
         except NoSuchElementException:  # solo emoji nel messaggio
@@ -81,9 +83,9 @@ def readMessages(name):
                     finalMessage = info + message
                     print(finalMessage)
                     message_dic[name].append(finalMessage)
-
             except NoSuchElementException:
                 pass
+    f.close()
 
     return
 
@@ -126,8 +128,10 @@ def saveMedia(name):
     saveImgVidAud(name)
     saveDoc(name)
 
+
 def saveDoc(name):
     docs_xpath = '//button[text()="Documenti"]'
+
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
     dir = 'Scraped/' + name + '/Docs/'
@@ -154,7 +158,6 @@ def saveDoc(name):
             time.sleep(5)
             move_to_download_folder("C:\\Users\\Routi\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
-
 
 def move_to_download_folder(downloadPath, FileName, dest):
     got_file = False
@@ -184,14 +187,14 @@ def saveImgVidAud(name):
     if noMedia == False:
         try:
             image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div/div[1]/div" #1 media
-            image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+            image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
         except:
             try:
                 image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]" #2 media
-                image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+                image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
             except:
                 image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div" #diversi media
-                image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+                image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
 
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
@@ -252,37 +255,30 @@ def get_file_content_chrome(driver, uri):
     return result
 
 
-def createFile():
-    keys = message_dic.keys()
-    for key in keys:
-        f = open(key+'.txt', 'w', encoding='utf-8')
-        for message in message_dic.get(key):
-            f.write(message)
-            f.write('\n')
-    f.close()
-    return
-
-
 if __name__ == '__main__':
-    choise = input ("Vuoi caricare la lista dei contatti o vuoi fare scraping di ogni contatto?")
-    if choise == 'ogni contatto':
-        chatLabels = getChatLabels() # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
-    else:
-        file = input("Inserisci il percorso del file csv")
-        # TODO: TROVARE FILE DA NOME PASSATO COME INPUT
-        getChatLabels = [] ; getChatLabels = str(file) # TODO: DA FILE A LISTA DI CONTATTI, IMPLEMEMTARE LISTA CONTATTI COME DICT
+    # choise = input ("Cosa vuoi fare?\n"
+    #                 "1)Caricare la lista dei contatti: premi 1\n"
+    #                 "Fare scraping di ogni contatto: premi 2")
+    #
+    # if choise == '2':
+    #     chatLabels = getChatLabels() # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
+    # if choise == '1':
+    #     file = input("Inserisci il percorso del file csv")
+    #     # TODO: TROVARE FILE DA NOME PASSATO COME INPUT
+    #     getChatLabels = [] ; getChatLabels = str(file) # TODO: DA FILE A LISTA DI CONTATTI, IMPLEMEMTARE LISTA CONTATTI COME DICT
 
-    iterChatList(chatLabels)  # scorrere la lista e copia la chat
-    createFile()
+    chatLabels = getChatLabels()
+    iterChatList(chatLabels)
     driver.close() #TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
+
     # TODO:
     # IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
-    # AGGIUNGERE CHROMEDRIVER NELLA STESSA CARTELLA DEL PROGETTO!!!!!! <----
-    # IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON
+    # IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
     # CARICARE LISTA DI CONTATTI DA CSV
     # RICHIESTE A LINEA DI COMANDO O GRAFICA (?)
-    # IMPOLEMENTARE IN AZURE (?)
+    # IMPLEMENTARE IN AZURE (?)
+    # AGGIUNGERE OUTPUT DI FEEDBACK
     # registrazioni vocali in, registrazioni vocali out
-    # salvare i messaggi nel file man mano che si leggono, non alal fine
     # doppio hash degli output
+    # LEGGERE CHAT ARCHIVIATE
 
