@@ -7,6 +7,7 @@ import time ; import base64 ; import os
 from datetime import datetime
 import urllib.request
 import os
+import hashlib
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
 SAVE_MEDIA = False
@@ -79,6 +80,16 @@ def readMessages(name):
             except NoSuchElementException:
                 pass
     f.close()
+    #Creazione del doppio hash del file contenente le chat
+    md5 = hashlib.md5()
+    sha512 = hashlib.sha512()
+    file = name + '.csv'
+    md5.update(file.encode('utf-8'))
+    md5_digest = md5.hexdigest()
+    sha512.update(md5_digest.encode('utf-8'))
+    sha512_digest = sha512.hexdigest()
+    f_hash = open(name + '_hash.txt', 'w', encoding='utf-8')
+    f_hash.write(sha512_digest)
     return
 
 def csvCreator(info,message):
@@ -268,11 +279,10 @@ if __name__ == '__main__':
     #     # TODO: TROVARE FILE DA NOME PASSATO COME INPUT
     #     getChatLabels = [] ; getChatLabels = str(file) # TODO: DA FILE A LISTA DI CONTATTI, IMPLEMEMTARE LISTA CONTATTI COME DICT
 
-'''
     chatLabels = getChatLabels()
     iterChatList(chatLabels)
     driver.close()
-'''
+
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: CARICARE LISTA DI CONTATTI DA CSV
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
