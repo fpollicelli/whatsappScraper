@@ -32,7 +32,7 @@ time.sleep(15)
 
 def readMessages(name):
     message_dic[name] = []
-    f = open(name + '.txt', 'w', encoding='utf-8')
+    f = open(name + '.csv', 'w', encoding='utf-8')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
     while trovato == False:
@@ -270,9 +270,10 @@ if __name__ == '__main__':
 
 
     # TODO: CARICARE LISTA DI CONTATTI DA CSV
+
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
     # TODO: IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
-    # TODO: RICHIESTE A LINEA DI COMANDO O GRAFICA (?)
+    # TODO: RICHIESTE A LINEA DI COMANDO
     # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
     # TODO: registrazioni vocali in, registrazioni vocali out
     # TODO: doppio hash degli output
