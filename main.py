@@ -1,4 +1,5 @@
 from selenium import webdriver
+import re
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,7 +8,7 @@ from datetime import datetime
 import urllib.request
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-SAVE_MEDIA = True
+SAVE_MEDIA = False
 message_dic = {}
 
 options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -32,15 +33,6 @@ time.sleep(15)
 def readMessages(name):
     message_dic[name] = []
     f = open(name + '.txt', 'w', encoding='utf-8')
-    try:
-        imageProfile = driver.find_element_by_xpath("//*[@id='main']/header/div[1]/div/img")  # get immagine profilo
-        message_dic[name].append(imageProfile.get_attribute('src'))  # append immagine profilo
-        f.write(imageProfile.get_attribute('src'))
-    except:  # se l'immagine non è presente (come nelle chat broadcast), ne metto una di default
-        message_dic[name].append(
-            'https://img.favpng.com/8/18/10/broadcast-icon-png-favpng-ETMe9P4W42EtfnqyyGjrw39Q4.jpg')  # append immagine profilo
-        f.write('https://img.favpng.com/8/18/10/broadcast-icon-png-favpng-ETMe9P4W42EtfnqyyGjrw39Q4.jpg')
-    f.write('\n')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
     while trovato == False:
@@ -66,8 +58,7 @@ def readMessages(name):
                     message = message + emoji.get_attribute("data-plain-text")
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
-            finalMessage = info + message
-            print(finalMessage)
+            finalMessage = csvCreator(info,message)
             f.write(finalMessage)
             f.write('\n')
             message_dic[name].append(finalMessage)
@@ -80,15 +71,21 @@ def readMessages(name):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
-                    finalMessage = info + message
-                    print(finalMessage)
+                    finalMessage = csvCreator(info,message)
                     message_dic[name].append(finalMessage)
             except NoSuchElementException:
                 pass
     f.close()
-
     return
 
+def csvCreator(info,message):
+    oraData = info[info.find('[') + 1: info.find(']')+1]
+    ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+    data = oraData[oraData.find(' ')+ 1: oraData.find(']')]
+    mittente =  info.split(']')[1].strip()
+    mittente = mittente.split(':')[0].strip()
+    finalMessage = data+","+ora+","+mittente+","+message
+    return finalMessage
 
 def getChatLabels():
     chatLabels = []
@@ -271,14 +268,13 @@ if __name__ == '__main__':
     iterChatList(chatLabels)
     driver.close() #TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
 
-    # TODO:
-    # IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
-    # IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
-    # CARICARE LISTA DI CONTATTI DA CSV
-    # RICHIESTE A LINEA DI COMANDO O GRAFICA (?)
-    # IMPLEMENTARE IN AZURE (?)
-    # AGGIUNGERE OUTPUT DI FEEDBACK
-    # registrazioni vocali in, registrazioni vocali out
-    # doppio hash degli output
-    # LEGGERE CHAT ARCHIVIATE
+
+    # TODO: CARICARE LISTA DI CONTATTI DA CSV
+    # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
+    # TODO: IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
+    # TODO: RICHIESTE A LINEA DI COMANDO O GRAFICA (?)
+    # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
+    # TODO: registrazioni vocali in, registrazioni vocali out
+    # TODO: doppio hash degli output
+    # TODO: LEGGERE CHAT ARCHIVIATE
 
