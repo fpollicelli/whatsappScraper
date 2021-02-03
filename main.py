@@ -6,21 +6,24 @@ from selenium.webdriver.support.ui import WebDriverWait
 import time ; import base64 ; import os
 from datetime import datetime
 import urllib.request
+import os
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
 SAVE_MEDIA = False
 message_dic = {}
 
+user = os.environ["USERNAME"]
+
 options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
 options.add_experimental_option("prefs", {
-  "download.default_directory": r"C:\Users\Routi\Download",
+  "download.default_directory": r"C:\Users"+"\\"+user+"\Download",
   "download.prompt_for_download": False,
   "download.directory_upgrade": True,
   "safebrowsing.enabled": True
 })
 options.add_argument("--remote-debugging-port=9222")
 options.add_argument(
-    "user-data-dir=C:\\Users\\Routi\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+    "user-data-dir=C:\\Users\\"+user+"\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
 
 driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
 
@@ -33,8 +36,6 @@ time.sleep(15)
 def readMessages(name):
     message_dic[name] = []
     f = open(name + '.csv', 'w', encoding='utf-8')
-    f.write('Data,Ora,Mittente,Messaggio')
-    f.write('\n')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
     while trovato == False:
@@ -155,7 +156,7 @@ def saveDoc(name):
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
             time.sleep(5)
-            move_to_download_folder("C:\\Users\\Routi\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
+            move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
 
 def move_to_download_folder(downloadPath, FileName, dest):
@@ -253,43 +254,27 @@ def get_file_content_chrome(driver, uri):
         raise Exception("Request failed with status %s" % result)
     return result
 
-def getChatFromCSV(path):
-    recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
-    chatLabels = []
-    name = []
-    f = open(path, 'r')
-    line = f.read()
-    name = line.split(",")
-    for i in range (0, len(name)):
-        if 'str' in name[i]:
-            break
-        for chat in recentList:
-            chat.click()
-            time.sleep(WAIT_FOR_CHAT_TO_LOAD)
-            label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
-            chatName = label[0].get_attribute('title')
-            if name[i] in chatName:
-                chatLabels.append(chat)
-    chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
-                         reverse=False)
-    return chatLabels
 
 if __name__ == '__main__':
-    choise = input ("Cosa vuoi fare?\n"
-                    "1)Caricare la lista dei contatti: premi 1\n"
-                    "Fare scraping di ogni contatto: premi 2")
 
-    if choise == '2':
-        chatLabels = getChatLabels() # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
-    if choise == '1':
-        file = input("Inserisci il percorso del file csv")
-        chatLabels = getChatFromCSV(file)
+    # choise = input ("Cosa vuoi fare?\n"
+    #                 "1)Caricare la lista dei contatti: premi 1\n"
+    #                 "Fare scraping di ogni contatto: premi 2")
+    #
+    # if choise == '2':
+    #     chatLabels = getChatLabels() # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
+    # if choise == '1':
+    #     file = input("Inserisci il percorso del file csv")
+    #     # TODO: TROVARE FILE DA NOME PASSATO COME INPUT
+    #     getChatLabels = [] ; getChatLabels = str(file) # TODO: DA FILE A LISTA DI CONTATTI, IMPLEMEMTARE LISTA CONTATTI COME DICT
+
+'''
+    chatLabels = getChatLabels()
     iterChatList(chatLabels)
-    driver.close() #TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
-
-
-    # TODO: VELOCIZZARE PROCESSO DI CONTROLLO PRESENZA CONTATTO DA CSV
-
+    driver.close()
+'''
+    # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
+    # TODO: CARICARE LISTA DI CONTATTI DA CSV
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
     # TODO: IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
     # TODO: RICHIESTE A LINEA DI COMANDO
