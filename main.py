@@ -6,21 +6,24 @@ from selenium.webdriver.support.ui import WebDriverWait
 import time ; import base64 ; import os
 from datetime import datetime
 import urllib.request
+import os
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
 SAVE_MEDIA = False
 message_dic = {}
 
+user = os.environ["USERNAME"]
+
 options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
 options.add_experimental_option("prefs", {
-  "download.default_directory": r"C:\Users\Routi\Download",
+  "download.default_directory": r"C:\Users"+"\\"+user+"\Download",
   "download.prompt_for_download": False,
   "download.directory_upgrade": True,
   "safebrowsing.enabled": True
 })
 options.add_argument("--remote-debugging-port=9222")
 options.add_argument(
-    "user-data-dir=C:\\Users\\Routi\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+    "user-data-dir=C:\\Users\\"+user+"\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
 
 driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
 
@@ -153,7 +156,7 @@ def saveDoc(name):
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
             time.sleep(5)
-            move_to_download_folder("C:\\Users\\Routi\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
+            move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
 
 def move_to_download_folder(downloadPath, FileName, dest):
@@ -253,6 +256,7 @@ def get_file_content_chrome(driver, uri):
 
 
 if __name__ == '__main__':
+
     # choise = input ("Cosa vuoi fare?\n"
     #                 "1)Caricare la lista dei contatti: premi 1\n"
     #                 "Fare scraping di ogni contatto: premi 2")
@@ -264,13 +268,13 @@ if __name__ == '__main__':
     #     # TODO: TROVARE FILE DA NOME PASSATO COME INPUT
     #     getChatLabels = [] ; getChatLabels = str(file) # TODO: DA FILE A LISTA DI CONTATTI, IMPLEMEMTARE LISTA CONTATTI COME DICT
 
+'''
     chatLabels = getChatLabels()
     iterChatList(chatLabels)
-    driver.close() #TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
-
-
+    driver.close()
+'''
+    # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: CARICARE LISTA DI CONTATTI DA CSV
-
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
     # TODO: IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
     # TODO: RICHIESTE A LINEA DI COMANDO
