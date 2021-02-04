@@ -1,16 +1,17 @@
 from selenium import webdriver
-import re
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 import time ; import base64 ; import os
 from datetime import datetime
 import urllib.request
-import os
 import hashlib
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-SAVE_MEDIA = False
+SAVE_MEDIA = True
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -33,7 +34,6 @@ driver.get('http://web.whatsapp.com')
 wait = WebDriverWait(driver, 600)
 time.sleep(15)
 
-
 def readMessages(name):
     message_dic[name] = []
     f = open(name + '.csv', 'w', encoding='utf-8')
@@ -51,6 +51,25 @@ def readMessages(name):
 
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
     for messages in messageContainer:
+        if SAVE_MEDIA == True:
+            try:
+                vocal = messages.find_element_by_xpath(".//button/span[contains(@data-testid,'audio-download')]")
+                print("da scaricare")
+                vocal.click()
+                hover = ActionChains(driver).move_to_element(vocal)
+                hover.perform()
+
+                button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
+                    (By.XPATH, "//div[@id='gridProduct10247118']//a[@class='primary-button']")))
+                hover = ActionChains(driver).move_to_element(button)
+                hover.perform()
+
+                button.click()
+            except:
+                try:
+                    vocal = messages.find_element_by_xpath(".//button/span[contains(@data-testid,'audio-play')]")
+                    print("da far partire")
+                except: pass
         try:
             message = messages.find_element_by_xpath(
                 ".//span[contains(@class,'selectable-text invisible-space copyable-text')]"
@@ -143,7 +162,6 @@ def saveMedia(name):
 
 def saveDoc(name):
     docs_xpath = '//button[text()="Documenti"]'
-
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
     dir = 'Scraped/' + name + '/Docs/'
@@ -178,7 +196,7 @@ def move_to_download_folder(downloadPath, FileName, dest):
             currentFile = downloadPath+FileName
             got_file = True
         except:
-            print ("File has not finished downloading")
+            print ("Attendere il completamento del download")
             time.sleep(20)
     fileDestination = dest+FileName
     os.rename(currentFile, fileDestination)
@@ -224,8 +242,6 @@ def saveImgVidAud(name):
                     mediaType = '.mp4'
                 except:
                     try:
-                        image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]"
-                        image = driver.find_element_by_xpath(image_xpath)
                         audio_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/audio"
                         image = driver.find_element_by_xpath(audio_xpath)
                         mediaType = '.mpeg'
@@ -249,7 +265,6 @@ def saveImgVidAud(name):
         close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
         close_image_button.click()
 
-
 def get_file_content_chrome(driver, uri):
     result = driver.execute_async_script("""
     var uri = arguments[0];
@@ -269,7 +284,6 @@ def get_file_content_chrome(driver, uri):
 def getChatFromCSV(path):
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     chatLabels = []
-    name = []
     f = open(path, 'r')
     line = f.read()
     name = line.split(",")
@@ -298,15 +312,15 @@ if __name__ == '__main__':
         file = input("Inserisci il percorso del file csv")
         chatLabels = getChatFromCSV(file)
     iterChatList(chatLabels)
-    driver.close() #TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
+    driver.close()
 
-
-    # TODO: CARICARE LISTA DI CONTATTI DA CSV
-
-    # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
-    # TODO: IMPLEMENTARE PATH CHROME PRESA IN AUTOMATICO DA PYTHON per la cartella di download
-    # TODO: RICHIESTE A LINEA DI COMANDO
-    # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
     # TODO: registrazioni vocali in, registrazioni vocali out
-    # TODO: doppio hash degli output
+    # TODO: doppio hash dei media
+    # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
+    # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
+    # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
+    # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
+    # TODO: sistemare problema downoad doc multiplic
+
+
