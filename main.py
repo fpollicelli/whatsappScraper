@@ -1,3 +1,4 @@
+import shutil
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -90,6 +91,14 @@ def readMessages(name):
             except NoSuchElementException:
                 pass
     f.close()
+    # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
+    time.sleep(5)
+    src = r"C:\Users"+"\\"+user+"\\Download\\"
+    dest = 'Scraped/' + name + '/Media/'
+    files = os.listdir(src)
+    for f in files:
+        shutil.move(src + f, dest)
+
     #Creazione del doppio hash del file contenente le chat
     md5 = hashlib.md5()
     sha512 = hashlib.sha512()
