@@ -1,6 +1,5 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
@@ -53,23 +52,14 @@ def readMessages(name):
     for messages in messageContainer:
         if SAVE_MEDIA == True:
             try:
-                vocal = messages.find_element_by_xpath(".//button/span[contains(@data-testid,'audio-download')]")
-                print("da scaricare")
+                vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 vocal.click()
-                hover = ActionChains(driver).move_to_element(vocal)
-                hover.perform()
-
+                downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
+                downContext.click()
                 button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                    (By.XPATH, "//div[@id='gridProduct10247118']//a[@class='primary-button']")))
-                hover = ActionChains(driver).move_to_element(button)
-                hover.perform()
-
+                    (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[3]/div")))
                 button.click()
-            except:
-                try:
-                    vocal = messages.find_element_by_xpath(".//button/span[contains(@data-testid,'audio-play')]")
-                    print("da far partire")
-                except: pass
+            except:pass
         try:
             message = messages.find_element_by_xpath(
                 ".//span[contains(@class,'selectable-text invisible-space copyable-text')]"
@@ -314,7 +304,6 @@ if __name__ == '__main__':
     iterChatList(chatLabels)
     driver.close()
 
-    # TODO: registrazioni vocali in, registrazioni vocali out
     # TODO: doppio hash dei media
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
@@ -322,5 +311,7 @@ if __name__ == '__main__':
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
     # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
     # TODO: sistemare problema downoad doc multiplic
+    # TODO: ridurre tempo attesa caricamento media
+    # TODO: cambiare cartella di download di default
 
 
