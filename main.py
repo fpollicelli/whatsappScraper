@@ -104,6 +104,8 @@ def readMessages(name):
     time.sleep(5)
     src = r"C:\Users"+"\\"+user+"\\Download\\"
     dest = 'Scraped/' + name + '/Media/'
+    if not os.path.exists(dest):
+        os.makedirs(dest)
     files = os.listdir(src)
     for f in files:
         shutil.move(src + f, dest)
@@ -273,7 +275,7 @@ def saveImgVidAud(name):
         close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
         close_image_button.click()
 
-def get_file_content_chrome(uri):
+def get_file_content_chrome(driver, uri):
     result = driver.execute_async_script("""
     var uri = arguments[0];
     var callback = arguments[1];
