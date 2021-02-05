@@ -43,7 +43,7 @@ def openChrome():
 
 def readMessages(name, driver):
     message_dic[name] = []
-    f = open(name + '.csv', 'w', encoding='utf-8')
+    f = open(name+'.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
@@ -107,7 +107,7 @@ def readMessages(name, driver):
             except NoSuchElementException:
                 pass
     f.close()
-    hashing(name)   #Creazione del doppio hash del file contenente le chat
+    hashing(name,'.csv')   #Creazione del doppio hash del file contenente le chat
 
     # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
     time.sleep(5)
@@ -121,16 +121,16 @@ def readMessages(name, driver):
 
     return
 
-def hashing(fname):
+def hashing(name,extension):
     hash_md5 = hashlib.md5()
     sha512 = hashlib.sha512()
-    with open(fname+'.csv', "rb") as f:
+    with open(name+extension, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     md5Digest = hash_md5.hexdigest()
     sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    f_hash = open(fname + '_hash.txt', 'w', encoding='utf-8')
+    f_hash = open(name + '_hash.txt', 'w', encoding='utf-8')
     f_hash.write(sha512_digest)
     return
 
@@ -223,7 +223,7 @@ def move_to_download_folder(downloadPath, FileName, dest):
             got_file = True
         except:
             print ("Attendere il completamento del download")
-            time.sleep(20)
+    time.sleep(5)
     fileDestination = dest+FileName
     os.rename(currentFile, fileDestination)
     return
