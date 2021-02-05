@@ -23,7 +23,7 @@ user = os.environ["USERNAME"]
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
-        "download.default_directory": r"C:\Users" + "\\" + user + "\DPycharmProjects\\whatsappScraperProgetto\\Download",
+        "download.default_directory": r"C:\Users" + "\\" + user + "\PycharmProjects\\whatsappScraperProgetto\\Download",
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
@@ -157,6 +157,7 @@ def iterChatList(chatLabels, driver):
         readMessages(chatName, driver)
         if SAVE_MEDIA == True:
             saveMedia(chatName, driver)
+    driver.close()
     return
 
 def saveMedia(name, driver):
