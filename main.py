@@ -5,10 +5,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-import time ; import base64 ; import os
+import time
+import base64
+import os
 from datetime import datetime
 import urllib.request
 import hashlib
+import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
 SAVE_MEDIA = True
@@ -18,21 +21,27 @@ user = os.environ["USERNAME"]
 
 options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
 options.add_experimental_option("prefs", {
-  "download.default_directory": r"C:\Users"+"\\"+user+"\Download",
-  "download.prompt_for_download": False,
-  "download.directory_upgrade": True,
-  "safebrowsing.enabled": True
+    "download.default_directory": r"C:\Users" + "\\" + user + "\Download",
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "safebrowsing.enabled": True
 })
 options.add_argument("--remote-debugging-port=9222")
 options.add_argument(
-    "user-data-dir=C:\\Users\\"+user+"\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-
+    "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
 driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
 
-# apre whatsapp nel browser
-driver.get('http://web.whatsapp.com')
-wait = WebDriverWait(driver, 600)
-time.sleep(15)
+def openChrome():
+    # apre whatsapp nel browser
+    driver.get('http://web.whatsapp.com')
+    wait = WebDriverWait(driver, 600)
+    time.sleep(15)
+    return
+
+def scraping():
+    chatLabels = getChatLabels()
+    iterChatList(chatLabels)
+    driver.close()
 
 def readMessages(name):
     message_dic[name] = []
@@ -264,7 +273,7 @@ def saveImgVidAud(name):
         close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
         close_image_button.click()
 
-def get_file_content_chrome(driver, uri):
+def get_file_content_chrome(uri):
     result = driver.execute_async_script("""
     var uri = arguments[0];
     var callback = arguments[1];
@@ -300,18 +309,42 @@ def getChatFromCSV(path):
                          reverse=False)
     return chatLabels
 
+
+window = tk.Tk()
+window.geometry("900x550")
+window.title("Whatapp Scraper")
+window.grid_columnconfigure(0, weight=1)
+window.resizable(False, False)
+
+title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
+title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
+
+credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca Pollicelli")
+credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
+
+chooses = tk.Label(window, text="Cosa vuoi fare?", font=("Helvetica", 12))
+chooses.grid(row=2, column=0, sticky="W", padx=10, pady=20)
+
+choose_1 = tk.Button(text="Caricare Lista Contatti")
+choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
+
+choose_2 = tk.Button(text="Scraping Contatti", command=lambda: [openChrome(), scraping()])
+choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
+
 if __name__ == '__main__':
+    window.mainloop()
+    '''
     choise = input ("Cosa vuoi fare?\n"
                     "1)Caricare la lista dei contatti: premi 1\n"
                     "Fare scraping di ogni contatto: premi 2")
 
     if choise == '2':
-        chatLabels = getChatLabels() # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
+        # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
     if choise == '1':
         file = input("Inserisci il percorso del file csv")
         chatLabels = getChatFromCSV(file)
-    iterChatList(chatLabels)
-    driver.close()
+'''
+
 
     # TODO: doppio hash dei media
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
