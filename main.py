@@ -69,6 +69,15 @@ def readMessages(name):
                 button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
                     (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[3]/div")))
                 button.click()
+                # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
+                time.sleep(5)
+                src = r"C:\Users" + "\\" + user + "\\Download\\"
+                dest = 'Scraped/' + name + '/Media/'
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                files = os.listdir(src)
+                for f in files:
+                    shutil.move(src + f, dest)
             except:pass
         try:
             message = messages.find_element_by_xpath(
@@ -100,6 +109,8 @@ def readMessages(name):
             except NoSuchElementException:
                 pass
     f.close()
+    hashing(name)   #Creazione del doppio hash del file contenente le chat
+
     # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
     time.sleep(5)
     src = r"C:\Users"+"\\"+user+"\\Download\\"
@@ -110,17 +121,21 @@ def readMessages(name):
     for f in files:
         shutil.move(src + f, dest)
 
-    #Creazione del doppio hash del file contenente le chat
-    md5 = hashlib.md5()
+    return
+
+def hashing(fname):
+    hash_md5 = hashlib.md5()
     sha512 = hashlib.sha512()
-    file = name + '.csv'
-    md5.update(file.encode('utf-8'))
-    md5_digest = md5.hexdigest()
-    sha512.update(md5_digest.encode('utf-8'))
+    with open(fname+'.csv', "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    md5Digest = hash_md5.hexdigest()
+    sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    f_hash = open(name + '_hash.txt', 'w', encoding='utf-8')
+    f_hash = open(fname + '_hash.txt', 'w', encoding='utf-8')
     f_hash.write(sha512_digest)
     return
+
 
 def csvCreator(info,message):
     oraData = info[info.find('[') + 1: info.find(']')+1]
@@ -348,7 +363,7 @@ if __name__ == '__main__':
 '''
 
 
-    # TODO: doppio hash dei media
+    # TODO: doppio hash dei media --- IN PROGRESS
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
