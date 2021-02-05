@@ -76,8 +76,8 @@ def readMessages(name):
                 if not os.path.exists(dest):
                     os.makedirs(dest)
                 files = os.listdir(src)
-                for f in files:
-                    shutil.move(src + f, dest)
+                for audio in files:
+                    shutil.move(src + audio, dest)
             except:pass
         try:
             message = messages.find_element_by_xpath(
