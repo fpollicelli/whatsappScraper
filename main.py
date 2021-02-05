@@ -14,7 +14,7 @@ import hashlib
 import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-SAVE_MEDIA = False
+SAVE_MEDIA = True
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -37,7 +37,6 @@ def openChrome():
     driver.get('http://web.whatsapp.com')
     wait = WebDriverWait(driver, 600)
     time.sleep(15)
-
     return driver
 
 
@@ -120,8 +119,9 @@ def hashing(name,extension):
     md5Digest = hash_md5.hexdigest()
     sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    f_hash = open(name + '_hash.txt', 'w', encoding='utf-8')
-    f_hash.write(sha512_digest)
+    f_hash = open('hashing.txt', 'a', encoding='utf-8')
+    f_hash.write(name+extension+","+sha512_digest)
+    f_hash.write('\n')
     return
 
 
@@ -209,7 +209,9 @@ def saveDoc(name, driver):
             fileName = a_tag.get_attribute("Title")
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
-            #time.sleep(5)
+            time.sleep(5)
+            nameWithoutExt = fileName[:-4]
+            hashing('Download/'+ nameWithoutExt, '.pdf')
             #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
 #REMOVE
@@ -282,6 +284,7 @@ def saveImgVidAud(name, driver):
                 with open(filename, 'wb') as file_to_save:
                     decoded_image_data = base64.decodebytes(base64_img_bytes)
                     file_to_save.write(decoded_image_data)
+                    hashing('Scraped/'+ name + '/Media/'+str(i),mediaType)
                 nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
                 lastimg = nextButton.get_attribute("aria-disabled")
                 nextButton.click()
@@ -365,12 +368,12 @@ if __name__ == '__main__':
 '''
 
 
-    # TODO: doppio hash dei media --- IN PROGRESS
+    # TODO: spostare tutti i gile in un'unica cartella
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
-    # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
+    # TODO: cancellare feedback quando lo scraping è terminato (cliccando uno dei due pulsanti)
     # TODO: sistemare problema download doc multipli
     # TODO: ridurre tempo attesa caricamento media
     # TODO: cambiare cartella di download di default
