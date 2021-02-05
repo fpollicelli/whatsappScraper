@@ -23,7 +23,7 @@ user = os.environ["USERNAME"]
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
-        "download.default_directory": r"C:\Users" + "\\" + user + "\Download",
+        "download.default_directory": r"C:\Users" + "\\" + user + "\DPycharmProjects\\whatsappScraperProgetto\\Download",
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
@@ -68,14 +68,14 @@ def readMessages(name, driver):
                     (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[3]/div")))
                 button.click()
                 # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
-                time.sleep(5)
-                src = r"C:\Users" + "\\" + user + "\\Download\\"
-                dest = 'Scraped/' + name + '/Media/'
-                if not os.path.exists(dest):
-                    os.makedirs(dest)
-                files = os.listdir(src)
-                for audio in files:
-                    shutil.move(src + audio, dest)
+                # time.sleep(5)
+                # src = r"C:\Users" + "\\" + user + "\\Download\\"
+                # dest = 'Scraped/' + name + '/Media/'
+                # if not os.path.exists(dest):
+                #     os.makedirs(dest)
+                # files = os.listdir(src)
+                # for audio in files:
+                #     shutil.move(src + audio, dest)
             except:pass
         try:
             message = messages.find_element_by_xpath(
@@ -201,10 +201,10 @@ def saveDoc(name, driver):
             fileName = a_tag.get_attribute("Title")
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
-            time.sleep(5)
-            move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
+            #time.sleep(5)
+            #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
-
+#REMOVE
 def move_to_download_folder(downloadPath, FileName, dest):
     got_file = False
     while got_file == False:
