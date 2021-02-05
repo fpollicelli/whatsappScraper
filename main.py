@@ -14,7 +14,7 @@ import hashlib
 import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-SAVE_MEDIA = True
+SAVE_MEDIA = False
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -152,6 +152,11 @@ def getChatLabels():
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
+    driver.close()
+
+    resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=("Helvetica", 10))
+    resultLabel.grid(row=4, column=0, stick="W", padx=10, pady=10)
+
     return
 
 
@@ -169,6 +174,7 @@ def iterChatList(chatLabels, driver):
             saveMedia(chatName, driver)
     return
 
+
 def saveMedia(name, driver):
     menu = driver.find_element_by_xpath("(//div[@title=\"Menu\"])[2]")
     menu.click()
@@ -184,6 +190,8 @@ def saveMedia(name, driver):
     media.click()
     saveImgVidAud(name, driver)
     saveDoc(name, driver)
+
+    return
 
 
 def saveDoc(name, driver):
@@ -227,6 +235,7 @@ def move_to_download_folder(downloadPath, FileName, dest):
     fileDestination = dest+FileName
     os.rename(currentFile, fileDestination)
     return
+
 
 def saveImgVidAud(name, driver):
     dir = 'Scraped/'+ name + '/Media/'
@@ -290,6 +299,7 @@ def saveImgVidAud(name, driver):
                 lastimg = True
         close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
         close_image_button.click()
+        return
 
 def get_file_content_chrome(driver, uri):
     result = driver.execute_async_script("""
@@ -349,6 +359,7 @@ choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 choose_2 = tk.Button(text="Scraping Contatti", command=getChatLabels)
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
 
+
 if __name__ == '__main__':
     window.mainloop()
     '''
@@ -370,7 +381,7 @@ if __name__ == '__main__':
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
     # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
-    # TODO: sistemare problema downoad doc multiplic
+    # TODO: sistemare problema download doc multipli
     # TODO: ridurre tempo attesa caricamento media
     # TODO: cambiare cartella di download di default
 
