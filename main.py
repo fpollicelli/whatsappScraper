@@ -157,7 +157,6 @@ def iterChatList(chatLabels, driver):
         readMessages(chatName, driver)
         if SAVE_MEDIA == True:
             saveMedia(chatName, driver)
-    driver.close()
     return
 
 def saveMedia(name, driver):
