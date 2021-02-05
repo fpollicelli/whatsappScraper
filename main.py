@@ -19,31 +19,29 @@ message_dic = {}
 
 user = os.environ["USERNAME"]
 
-options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
-options.add_experimental_option("prefs", {
-    "download.default_directory": r"C:\Users" + "\\" + user + "\Download",
-    "download.prompt_for_download": False,
-    "download.directory_upgrade": True,
-    "safebrowsing.enabled": True
-})
-options.add_argument("--remote-debugging-port=9222")
-options.add_argument(
-    "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
 
 def openChrome():
+    options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
+    options.add_experimental_option("prefs", {
+        "download.default_directory": r"C:\Users" + "\\" + user + "\Download",
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True
+    })
+    options.add_argument("--remote-debugging-port=9222")
+    options.add_argument(
+        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+    driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
+
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
     wait = WebDriverWait(driver, 600)
     time.sleep(15)
-    return
 
-def scraping():
-    chatLabels = getChatLabels()
-    iterChatList(chatLabels)
-    driver.close()
+    return driver
 
-def readMessages(name):
+
+def readMessages(name, driver):
     message_dic[name] = []
     f = open(name + '.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio')
@@ -147,15 +145,17 @@ def csvCreator(info,message):
     return finalMessage
 
 def getChatLabels():
+    driver = openChrome()
     chatLabels = []
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
-    return chatLabels
+    iterChatList(chatLabels, driver)
+    return
 
 
-def iterChatList(chatLabels):
+def iterChatList(chatLabels, driver):
     for chat in chatLabels:
         chat.click()
         time.sleep(WAIT_FOR_CHAT_TO_LOAD)
@@ -164,12 +164,12 @@ def iterChatList(chatLabels):
         if len(chatName) == 0:
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span/span') # se il nome contiene un'emoji, va nello span di sotto
             chatName = label[0].get_attribute('title')
-        readMessages(chatName)
+        readMessages(chatName, driver)
         if SAVE_MEDIA == True:
-            saveMedia(chatName)
+            saveMedia(chatName, driver)
     return
 
-def saveMedia(name):
+def saveMedia(name, driver):
     menu = driver.find_element_by_xpath("(//div[@title=\"Menu\"])[2]")
     menu.click()
     # time.sleep(20)
@@ -182,11 +182,11 @@ def saveMedia(name):
     media_xpath = '//span[text()="Media, link e documenti"]'
     media = driver.find_element_by_xpath(media_xpath)
     media.click()
-    saveImgVidAud(name)
-    saveDoc(name)
+    saveImgVidAud(name, driver)
+    saveDoc(name, driver)
 
 
-def saveDoc(name):
+def saveDoc(name, driver):
     docs_xpath = '//button[text()="Documenti"]'
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
@@ -228,7 +228,7 @@ def move_to_download_folder(downloadPath, FileName, dest):
     os.rename(currentFile, fileDestination)
     return
 
-def saveImgVidAud(name):
+def saveImgVidAud(name, driver):
     dir = 'Scraped/'+ name + '/Media/'
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -307,7 +307,7 @@ def get_file_content_chrome(driver, uri):
         raise Exception("Request failed with status %s" % result)
     return result
 
-def getChatFromCSV(path):
+def getChatFromCSV(path, driver):
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     chatLabels = []
     f = open(path, 'r')
@@ -346,7 +346,7 @@ chooses.grid(row=2, column=0, sticky="W", padx=10, pady=20)
 choose_1 = tk.Button(text="Caricare Lista Contatti")
 choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
-choose_2 = tk.Button(text="Scraping Contatti", command=lambda: [openChrome(), scraping()])
+choose_2 = tk.Button(text="Scraping Contatti", command=getChatLabels)
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
 
 if __name__ == '__main__':
@@ -360,7 +360,7 @@ if __name__ == '__main__':
         # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
     if choise == '1':
         file = input("Inserisci il percorso del file csv")
-        chatLabels = getChatFromCSV(file)
+        chatLabels = getChatFromCSV(file, driver) vedere da dove prendere driver
 '''
 
 
