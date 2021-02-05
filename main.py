@@ -177,6 +177,7 @@ def saveMedia(name):
         info = driver.find_element_by_xpath("//div[@title=\"Info gruppo\"]")
     except:
         info = driver.find_element_by_xpath("//div[@title=\"Info contatto\"]")
+    time.sleep(5)
     info.click()
     media_xpath = '//span[text()="Media, link e documenti"]'
     media = driver.find_element_by_xpath(media_xpath)
