@@ -109,16 +109,6 @@ def readMessages(name, driver):
     f.close()
     hashing(name,'.csv')   #Creazione del doppio hash del file contenente le chat
 
-    # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
-    time.sleep(5)
-    src = r"C:\Users"+"\\"+user+"\\Download\\"
-    dest = 'Scraped/' + name + '/Media/'
-    if not os.path.exists(dest):
-        os.makedirs(dest)
-    files = os.listdir(src)
-    for f in files:
-        shutil.move(src + f, dest)
-
     return
 
 def hashing(name,extension):
