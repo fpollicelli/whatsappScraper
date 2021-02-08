@@ -372,10 +372,8 @@ choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
 choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
-scrollbar = tk.Scrollbar(window)
-output = tk.Text(window, yscrollcommand=scrollbar.set, height=15, width=100)
+output = tk.Text(window, height=15, width=100)
 output.grid(row=5, column=0, stick="S", padx=10, pady=10)
-scrollbar.config(command=output.yview())
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
