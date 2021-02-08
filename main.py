@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 import time
 import base64
+from tkinter import filedialog
 import os
 from datetime import datetime
 import urllib.request
@@ -19,6 +20,11 @@ message_dic = {}
 
 user = os.environ["USERNAME"]
 
+window = tk.Tk()
+window.geometry("900x550")
+window.title("Whatapp Scraper")
+window.grid_columnconfigure(0, weight=1)
+window.resizable(False, False)
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -140,6 +146,9 @@ def csvCreator(info,message):
     finalMessage = data+","+ora+","+mittente+","+message
     return finalMessage
 
+resultLabel = tk.Label(window, font = ('Helvetica',10))
+resultLabel.grid(row=4, column=0, stick = 'W', padx=10, pady=10)
+
 def getChatLabels():
     driver = openChrome()
     chatLabels = []
@@ -151,7 +160,6 @@ def getChatLabels():
     driver.close()
 
     resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=("Helvetica", 10))
-    resultLabel.grid(row=4, column=0, stick="W", padx=10, pady=10)
     window.update()
 
     return
@@ -317,10 +325,20 @@ def get_file_content_chrome(driver, uri):
         raise Exception("Request failed with status %s" % result)
     return result
 
-def getChatFromCSV(path, driver):
+def getChatFromCSV():
+    filename = filedialog.askopenfilename(initialdir="/",
+                                          title="Select a File",
+                                          filetypes=(("Text files",
+                                                      "*.txt*"),
+                                                     ("all files",
+                                                      "*.*")))
+
+    # Change label contents
+    #label_file_explorer.configure(text="File Opened: " + filename)
+    driver = openChrome()
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     chatLabels = []
-    f = open(path, 'r')
+    f = open('culo', 'r')
     line = f.read()
     name = line.split(",")
     for i in range (0, len(name)):
@@ -338,11 +356,7 @@ def getChatFromCSV(path, driver):
     return chatLabels
 
 
-window = tk.Tk()
-window.geometry("900x550")
-window.title("Whatapp Scraper")
-window.grid_columnconfigure(0, weight=1)
-window.resizable(False, False)
+
 
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
@@ -358,9 +372,10 @@ choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
 choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
-
-output = tk.Text()
-output.grid(row=5, column=0, stick="W", padx=10, pady=10)
+scrollbar = tk.Scrollbar(window)
+output = tk.Text(window, yscrollcommand=scrollbar.set, height=15, width=100)
+output.grid(row=5, column=0, stick="S", padx=10, pady=10)
+scrollbar.config(command=output.yview())
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
