@@ -369,7 +369,6 @@ c1.grid(row=3, column=0, stick="W", padx=320, pady=10)
 if __name__ == '__main__':
     window.mainloop()
 
-
     # TODO: spostare tutti i file in un'unica cartella
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
