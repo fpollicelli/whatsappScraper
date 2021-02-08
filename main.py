@@ -327,18 +327,16 @@ def get_file_content_chrome(driver, uri):
 
 def getChatFromCSV():
     filename = filedialog.askopenfilename(initialdir="/",
-                                          title="Select a File",
-                                          filetypes=(("Text files",
-                                                      "*.txt*"),
+                                          title="Seleziona un file",
+                                          filetypes=(("CSV files",
+                                                      "*.csv*"),
                                                      ("all files",
                                                       "*.*")))
-
-    # Change label contents
-    #label_file_explorer.configure(text="File Opened: " + filename)
+    choose_1.configure(text=filename)
     driver = openChrome()
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     chatLabels = []
-    f = open('culo', 'r')
+    f = open(filename, 'r')
     line = f.read()
     name = line.split(",")
     for i in range (0, len(name)):
@@ -367,7 +365,7 @@ credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
 chooses = tk.Label(window, text="Cosa vuoi fare?", font=("Helvetica", 12))
 chooses.grid(row=2, column=0, sticky="W", padx=10, pady=20)
 
-choose_1 = tk.Button(text="Caricare Lista Contatti")
+choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
 choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
