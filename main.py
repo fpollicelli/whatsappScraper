@@ -359,8 +359,6 @@ choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
 
 output = tk.Text()
 output.grid(row=5, column=0, stick="W", padx=10, pady=10)
-s = tk.Scrollbar(window)
-s.config(command=output.yview)
 
 if __name__ == '__main__':
     window.mainloop()
