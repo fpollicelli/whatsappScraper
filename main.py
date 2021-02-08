@@ -1,4 +1,5 @@
 import shutil
+import tkinter as tk
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -14,7 +15,7 @@ import hashlib
 import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-SAVE_MEDIA = True
+SAVE_MEDIA = False
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -89,6 +90,7 @@ def readMessages(name, driver):
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
             finalMessage = csvCreator(info,message)
+            output.insert(tk.END,finalMessage + "\n")
             f.write(finalMessage)
             f.write('\n')
             message_dic[name].append(finalMessage)
@@ -101,7 +103,10 @@ def readMessages(name, driver):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
-                    finalMessage = csvCreator(info,message)
+                    finalMessage = csvCreator(info, message)
+                    output.insert(tk.END, "\n" + finalMessage)
+                    f.write(finalMessage)
+                    f.write('\n')
                     message_dic[name].append(finalMessage)
             except NoSuchElementException:
                 pass
@@ -352,29 +357,21 @@ choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 choose_2 = tk.Button(text="Scraping Contatti", command=getChatLabels)
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
 
+output = tk.Text()
+output.grid(row=5, column=0, stick="W", padx=10, pady=10)
+s = tk.Scrollbar(window)
+s.config(command=output.yview)
 
 if __name__ == '__main__':
     window.mainloop()
-    '''
-    choise = input ("Cosa vuoi fare?\n"
-                    "1)Caricare la lista dei contatti: premi 1\n"
-                    "Fare scraping di ogni contatto: premi 2")
-
-    if choise == '2':
-        # mettere in una lista tutti i label delle varie chat per scorrerli successivamente
-    if choise == '1':
-        file = input("Inserisci il percorso del file csv")
-        chatLabels = getChatFromCSV(file, driver) vedere da dove prendere driver
-'''
 
 
-    # TODO: spostare tutti i gile in un'unica cartella
+
+    # TODO: spostare tutti i file in un'unica cartella
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
-    # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
     # TODO: cancellare feedback quando lo scraping è terminato (cliccando uno dei due pulsanti)
-    # TODO: sistemare problema download doc multipli
     # TODO: ridurre tempo attesa caricamento media
     # TODO: cambiare cartella di download di default
 
