@@ -1,4 +1,4 @@
-import threading
+import shutil
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -14,16 +14,23 @@ import hashlib
 import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-#SAVE_MEDIA = False
+SAVE_MEDIA = False
 message_dic = {}
 
 user = os.environ["USERNAME"]
 
 
+window = tk.Tk()
+window.geometry("900x550")
+window.title("Whatapp Scraper")
+window.grid_columnconfigure(0, weight=1)
+window.resizable(False, False)
+
+
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
-        "download.default_directory": r"C:\Users" + "\\" + user + "\PycharmProjects\\whatsappScraperProgetto\\Download",
+        "download.default_directory": r"C:\Users" + "\\" + user + "\Download",
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
@@ -37,6 +44,7 @@ def openChrome():
     driver.get('http://web.whatsapp.com')
     wait = WebDriverWait(driver, 600)
     time.sleep(15)
+
     return driver
 
 
@@ -57,7 +65,7 @@ def readMessages(name, driver):
 
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
     for messages in messageContainer:
-        if (save_media.get() == 1):
+        if SAVE_MEDIA == True:
             try:
                 vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 vocal.click()
@@ -67,14 +75,14 @@ def readMessages(name, driver):
                     (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[3]/div")))
                 button.click()
                 # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
-                # time.sleep(5)
-                # src = r"C:\Users" + "\\" + user + "\\Download\\"
-                # dest = 'Scraped/' + name + '/Media/'
-                # if not os.path.exists(dest):
-                #     os.makedirs(dest)
-                # files = os.listdir(src)
-                # for audio in files:
-                #     shutil.move(src + audio, dest)
+                time.sleep(5)
+                src = r"C:\Users" + "\\" + user + "\\Download\\"
+                dest = 'Scraped/' + name + '/Media/'
+                if not os.path.exists(dest):
+                    os.makedirs(dest)
+                files = os.listdir(src)
+                for audio in files:
+                    shutil.move(src + audio, dest)
             except:pass
         try:
             message = messages.find_element_by_xpath(
@@ -89,8 +97,7 @@ def readMessages(name, driver):
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
             finalMessage = csvCreator(info,message)
-            output.insert(tk.END,finalMessage + "\n")
-            window.update()
+            output.insert(tk.END, finalMessage+"\n")
             f.write(finalMessage)
             f.write('\n')
             message_dic[name].append(finalMessage)
@@ -103,11 +110,8 @@ def readMessages(name, driver):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
-                    finalMessage = csvCreator(info, message)
-                    output.insert(tk.END, "\n" + finalMessage)
-                    window.update()
-                    f.write(finalMessage)
-                    f.write('\n')
+                    finalMessage = csvCreator(info,message)
+                    output.insert(tk.END, finalMessage+"\n")
                     message_dic[name].append(finalMessage)
             except NoSuchElementException:
                 pass
@@ -125,9 +129,8 @@ def hashing(name,extension):
     md5Digest = hash_md5.hexdigest()
     sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    f_hash = open('hashing.txt', 'a', encoding='utf-8')
-    f_hash.write(name+extension+","+sha512_digest)
-    f_hash.write('\n')
+    f_hash = open(name + '_hash.txt', 'w', encoding='utf-8')
+    f_hash.write(sha512_digest)
     return
 
 
@@ -140,6 +143,11 @@ def csvCreator(info,message):
     finalMessage = data+","+ora+","+mittente+","+message
     return finalMessage
 
+
+resultLabel = tk.Label(window, font=("Helvetica", 10))
+resultLabel.grid(row=4, column=0, stick="W", padx=10, pady=10)
+
+
 def getChatLabels():
     driver = openChrome()
     chatLabels = []
@@ -149,11 +157,7 @@ def getChatLabels():
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
     driver.close()
-
-    resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=("Helvetica", 10))
-    resultLabel.grid(row=4, column=0, stick="W", padx=10, pady=10)
-    window.update()
-
+    resultLabel.configure(text="Scraping terminato con successo!")
     return
 
 
@@ -167,7 +171,7 @@ def iterChatList(chatLabels, driver):
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span/span') # se il nome contiene un'emoji, va nello span di sotto
             chatName = label[0].get_attribute('title')
         readMessages(chatName, driver)
-        if (save_media.get() == 1):
+        if SAVE_MEDIA == True:
             saveMedia(chatName, driver)
     return
 
@@ -217,11 +221,9 @@ def saveDoc(name, driver):
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
             time.sleep(5)
-            nameWithoutExt = fileName[:-4]
-            hashing('Download/'+ nameWithoutExt, '.pdf')
-            #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
+            move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
-#REMOVE
+
 def move_to_download_folder(downloadPath, FileName, dest):
     got_file = False
     while got_file == False:
@@ -291,7 +293,6 @@ def saveImgVidAud(name, driver):
                 with open(filename, 'wb') as file_to_save:
                     decoded_image_data = base64.decodebytes(base64_img_bytes)
                     file_to_save.write(decoded_image_data)
-                    hashing('Scraped/'+ name + '/Media/'+str(i),mediaType)
                 nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
                 lastimg = nextButton.get_attribute("aria-disabled")
                 nextButton.click()
@@ -338,11 +339,6 @@ def getChatFromCSV(path, driver):
     return chatLabels
 
 
-window = tk.Tk()
-window.geometry("900x550")
-window.title("Whatapp Scraper")
-window.grid_columnconfigure(0, weight=1)
-window.resizable(False, False)
 
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
@@ -356,25 +352,28 @@ chooses.grid(row=2, column=0, sticky="W", padx=10, pady=20)
 choose_1 = tk.Button(text="Caricare Lista Contatti")
 choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
-choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
+choose_2 = tk.Button(text="Scraping Contatti", command=getChatLabels)
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
 
-output = tk.Text()
-output.grid(row=5, column=0, stick="W", padx=10, pady=10)
+scrollbar = tk.Scrollbar(window)
 
-save_media = tk.IntVar()
-c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
-c1.grid(row=3, column=0, stick="W", padx=320, pady=10)
+output = tk.Text(window, yscrollcommand=scrollbar.set, height=15, width=100)
+output.grid(row=5, column=0, stick="S", padx=10, pady=10)
+
+
+scrollbar.config(command=output.yview())
 
 if __name__ == '__main__':
     window.mainloop()
 
 
-    # TODO: spostare tutti i file in un'unica cartella
+    # TODO: doppio hash dei media --- IN PROGRESS
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
-    # TODO: cancellare feedback quando lo scraping è terminato (cliccando uno dei due pulsanti)
+    # TODO: IMPLEMENTARE SUPPORTO AD ALTRI BROWSER
+    # TODO: AGGIUNGERE OUTPUT DI FEEDBACK
+    # TODO: sistemare problema download doc multipli
     # TODO: ridurre tempo attesa caricamento media
     # TODO: cambiare cartella di download di default
 
