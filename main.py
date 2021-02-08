@@ -1,5 +1,4 @@
-import shutil
-import tkinter as tk
+import threading
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -15,7 +14,7 @@ import hashlib
 import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-SAVE_MEDIA = False
+#SAVE_MEDIA = False
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -58,7 +57,7 @@ def readMessages(name, driver):
 
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
     for messages in messageContainer:
-        if SAVE_MEDIA == True:
+        if (save_media.get() == 1):
             try:
                 vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 vocal.click()
@@ -91,6 +90,7 @@ def readMessages(name, driver):
             info = info.get_attribute("data-pre-plain-text")
             finalMessage = csvCreator(info,message)
             output.insert(tk.END,finalMessage + "\n")
+            window.update()
             f.write(finalMessage)
             f.write('\n')
             message_dic[name].append(finalMessage)
@@ -105,6 +105,7 @@ def readMessages(name, driver):
                     message = emoji.get_attribute("data-plain-text")
                     finalMessage = csvCreator(info, message)
                     output.insert(tk.END, "\n" + finalMessage)
+                    window.update()
                     f.write(finalMessage)
                     f.write('\n')
                     message_dic[name].append(finalMessage)
@@ -151,6 +152,7 @@ def getChatLabels():
 
     resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=("Helvetica", 10))
     resultLabel.grid(row=4, column=0, stick="W", padx=10, pady=10)
+    window.update()
 
     return
 
@@ -165,7 +167,7 @@ def iterChatList(chatLabels, driver):
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span/span') # se il nome contiene un'emoji, va nello span di sotto
             chatName = label[0].get_attribute('title')
         readMessages(chatName, driver)
-        if SAVE_MEDIA == True:
+        if (save_media.get() == 1):
             saveMedia(chatName, driver)
     return
 
@@ -354,15 +356,18 @@ chooses.grid(row=2, column=0, sticky="W", padx=10, pady=20)
 choose_1 = tk.Button(text="Caricare Lista Contatti")
 choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
-choose_2 = tk.Button(text="Scraping Contatti", command=getChatLabels)
+choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
 
 output = tk.Text()
 output.grid(row=5, column=0, stick="W", padx=10, pady=10)
 
+save_media = tk.IntVar()
+c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
+c1.grid(row=3, column=0, stick="W", padx=320, pady=10)
+
 if __name__ == '__main__':
     window.mainloop()
-
 
 
     # TODO: spostare tutti i file in un'unica cartella
