@@ -332,7 +332,9 @@ def getChatFromCSV():
                                                       "*.csv*"),
                                                      ("all files",
                                                       "*.*")))
-    choose_1.configure(text=filename)
+
+    nomeFile = os.path.basename(filename)
+    choose_1.configure(text=nomeFile)
     driver = openChrome()
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     chatLabels = []
