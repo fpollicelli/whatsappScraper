@@ -1,4 +1,7 @@
 import threading
+from django.conf import settings
+settings.configure()
+import emoji
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -104,12 +107,15 @@ def readMessages(name, driver):
 
         except NoSuchElementException:  # solo emoji nel messaggio
             try:
-                for emoji in messages.find_elements_by_xpath(
+                for emojiString in messages.find_elements_by_xpath(
                         ".//img[contains(@class,'selectable-text invisible-space copyable-text')]"
                 ):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
-                    message = emoji.get_attribute("data-plain-text")
+                    message = emojiString.get_attribute("data-plain-text")
+                    print(message)
+                    message = extract_emojis(message)
+                    print(message)
                     finalMessage = csvCreator(info, message)
                     output.configure(state='normal')
                     output.insert(tk.END, finalMessage + '\n')
@@ -122,8 +128,10 @@ def readMessages(name, driver):
                 pass
     f.close()
     hashing(name,'.csv')   #Creazione del doppio hash del file contenente le chat
-
     return
+
+def extract_emojis(s):
+  return ''.join(c for c in s if c in emoji.UNICODE_EMOJI)
 
 def hashing(name,extension):
     hash_md5 = hashlib.md5()
