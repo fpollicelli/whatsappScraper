@@ -15,7 +15,6 @@ import hashlib
 import tkinter as tk
 
 WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
-#SAVE_MEDIA = False
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -29,7 +28,7 @@ window.resizable(False, False)
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
-        "download.default_directory": r"C:\Users" + "\\" + user + "\PycharmProjects\\whatsappScraperProgetto\\Download",
+        "download.default_directory": r"C:\Users" + "\\" + user + "\PycharmProjects\\whatsappScraperProgetto\\Scraped\\Media",
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
@@ -48,7 +47,7 @@ def openChrome():
 
 def readMessages(name, driver):
     message_dic[name] = []
-    f = open(name+'.csv', 'w', encoding='utf-8')
+    f = open('Scraped/Chat/'+name+'.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
@@ -129,13 +128,13 @@ def readMessages(name, driver):
 def hashing(name,extension):
     hash_md5 = hashlib.md5()
     sha512 = hashlib.sha512()
-    with open(name+extension, "rb") as f:
+    with open('Scraped/Chat/'+name+extension, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     md5Digest = hash_md5.hexdigest()
     sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    f_hash = open('hashing.txt', 'a', encoding='utf-8')
+    f_hash = open('Scraped/Hash/hashing.txt', 'a', encoding='utf-8')
     f_hash.write(name+extension+","+sha512_digest)
     f_hash.write('\n')
     return
@@ -207,7 +206,7 @@ def saveDoc(name, driver):
     docs_xpath = '//button[text()="Documenti"]'
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
-    dir = 'Scraped/' + name + '/Docs/'
+    dir = 'Scraped/Media/'
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
@@ -230,7 +229,7 @@ def saveDoc(name, driver):
             document.click()
             time.sleep(5)
             nameWithoutExt = fileName[:-4]
-            hashing('Download/'+ nameWithoutExt, '.pdf')
+            hashing('Scraped/Media/'+ nameWithoutExt, '.pdf')
             #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
 #REMOVE
@@ -249,7 +248,7 @@ def move_to_download_folder(downloadPath, FileName, dest):
 
 
 def saveImgVidAud(name, driver):
-    dir = 'Scraped/'+ name + '/Media/'
+    dir = 'Scraped/Media/'
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
@@ -303,7 +302,7 @@ def saveImgVidAud(name, driver):
                 with open(filename, 'wb') as file_to_save:
                     decoded_image_data = base64.decodebytes(base64_img_bytes)
                     file_to_save.write(decoded_image_data)
-                    hashing('Scraped/'+ name + '/Media/'+str(i),mediaType)
+                    hashing('Scraped/Media/'+str(i),mediaType)
                 nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
                 lastimg = nextButton.get_attribute("aria-disabled")
                 nextButton.click()
@@ -359,7 +358,6 @@ def getChatFromCSV():
                          reverse=False)
     return chatLabels
 
-
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
@@ -384,12 +382,12 @@ c1.grid(row=3, column=0, stick="W", padx=320, pady=10)
 if __name__ == '__main__':
     window.mainloop()
 
-    # TODO: spostare tutti i file in un'unica cartella
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: LEGGERE CHAT ARCHIVIATE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: cancellare feedback quando lo scraping è terminato (cliccando uno dei due pulsanti)
     # TODO: ridurre tempo attesa caricamento media
-    # TODO: cambiare cartella di download di default
-    # TODO: disattivare scrittura in textbox
+    # TODO: check errori download (soprattutto documenti)
+    # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
+    # TODO: risolvere problema emoji
 
