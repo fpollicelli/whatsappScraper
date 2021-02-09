@@ -95,7 +95,9 @@ def readMessages(name, driver):
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
             finalMessage = csvCreator(info,message)
-            output.insert(tk.END,finalMessage + "\n")
+            output.configure(state='normal')
+            output.insert(tk.END,finalMessage + '\n')
+            output.configure(state='disabled')
             window.update()
             f.write(finalMessage)
             f.write('\n')
@@ -110,7 +112,9 @@ def readMessages(name, driver):
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
                     finalMessage = csvCreator(info, message)
-                    output.insert(tk.END, "\n" + finalMessage)
+                    output.configure(state='normal')
+                    output.insert(tk.END, finalMessage + '\n')
+                    output.configure(state='disabled')
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -372,7 +376,7 @@ choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
 choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
-output = tk.Text(window, height=15, width=100)
+output = tk.Text(window, height=15, width=100,state='disabled')
 output.grid(row=5, column=0, stick="S", padx=10, pady=10)
 
 save_media = tk.IntVar()
@@ -389,5 +393,5 @@ if __name__ == '__main__':
     # TODO: cancellare feedback quando lo scraping è terminato (cliccando uno dei due pulsanti)
     # TODO: ridurre tempo attesa caricamento media
     # TODO: cambiare cartella di download di default
-
+    # TODO: disattivare scrittura in textbox
 
