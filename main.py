@@ -25,6 +25,10 @@ window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 
+
+output = tk.Text(window, height=15, width=100, state='disabled')
+output.grid(row=5, column=0, stick="S", padx=10, pady=10)
+
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
@@ -154,6 +158,8 @@ resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=('H
 
 
 def getChatLabels():
+    output.config(state=tk.NORMAL)
+    output.delete(1.0, 'end')
     resultLabel.grid_forget()
     driver = openChrome()
     chatLabels = []
@@ -329,6 +335,9 @@ def get_file_content_chrome(driver, uri):
     return result
 
 def getChatFromCSV():
+    output.config(state=tk.NORMAL)
+    output.delete(1.0, 'end')
+    resultLabel.grid_forget()
     filename = filedialog.askopenfilename(initialdir="/",
                                           title="Seleziona un file",
                                           filetypes=(("CSV files",
@@ -356,6 +365,9 @@ def getChatFromCSV():
                 chatLabels.append(chat)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
                          reverse=False)
+    driver.close()
+    resultLabel.grid(row=4, column=0, stick='W', padx=10, pady=10)
+    window.update()
     return chatLabels
 
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
@@ -372,8 +384,6 @@ choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
 
 choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
-output = tk.Text(window, height=15, width=100,state='disabled')
-output.grid(row=5, column=0, stick="S", padx=10, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
