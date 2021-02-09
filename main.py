@@ -150,10 +150,12 @@ def csvCreator(info,message):
     finalMessage = data+","+ora+","+mittente+","+message
     return finalMessage
 
-resultLabel = tk.Label(window, font = ('Helvetica',10))
-resultLabel.grid(row=4, column=0, stick = 'W', padx=10, pady=10)
+
+resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=('Helvetica', 10))
+
 
 def getChatLabels():
+    resultLabel.grid_forget()
     driver = openChrome()
     chatLabels = []
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
@@ -162,10 +164,8 @@ def getChatLabels():
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
     driver.close()
-
-    resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=("Helvetica", 10))
+    resultLabel.grid(row=4, column=0, stick='W', padx=10, pady=10)
     window.update()
-
     return
 
 
@@ -358,8 +358,6 @@ def getChatFromCSV():
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
                          reverse=False)
     return chatLabels
-
-
 
 
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
