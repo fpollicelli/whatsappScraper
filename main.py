@@ -1,6 +1,7 @@
 import threading
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
@@ -27,7 +28,7 @@ window.resizable(False, False)
 
 
 output = tk.Text(window, height=15, width=100, state='disabled')
-output.grid(row=5, column=0, stick="S", padx=10, pady=10)
+output.grid(row=6, column=0, stick="S", padx=10, pady=10)
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -163,6 +164,10 @@ def getChatLabels():
     resultLabel.grid_forget()
     driver = openChrome()
     chatLabels = []
+
+    if (archiviate.get() == 1):
+        moveArchiviate(driver)
+
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
@@ -353,6 +358,10 @@ def getChatFromCSV():
     f = open(filename, 'r')
     line = f.read()
     name = line.split(",")
+
+    if (archiviate.get() == 1):
+        moveArchiviate(driver)
+
     for i in range (0, len(name)):
         if 'str' in name[i]:
             break
@@ -370,6 +379,35 @@ def getChatFromCSV():
     driver.close()
     return chatLabels
 
+
+def moveArchiviate(driver):
+    menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+    menuDots.click()
+    archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
+    archiv.click()
+    chatLabels = []
+    recentList = driver.find_elements_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div')
+    for label in recentList:
+        chatLabels.append(label)
+    #chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
+    i=1
+    for chat in chatLabels:
+        print(i)
+        i = 1+i
+    for chat in chatLabels:
+        actionChains = ActionChains(driver)
+        actionChains.context_click(chat).perform()
+        estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+        estrai.click()
+        chatLabels.remove(chat)
+        time.sleep(5)
+    #goBack = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+    #goBack.click()
+    return
+
+
+
+
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
@@ -377,17 +415,21 @@ credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca 
 credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
 
 chooses = tk.Label(window, text="Cosa vuoi fare?", font=("Helvetica", 12))
-chooses.grid(row=2, column=0, sticky="W", padx=10, pady=20)
+chooses.grid(row=2, column=0, sticky="W", padx=50, pady=20)
 
 choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
-choose_1.grid(row=3, column=0, sticky="W", padx=10, pady=10)
+choose_1.grid(row=4, column=0, sticky="W", padx=50, pady=10)
 
 choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
-choose_2.grid(row=3, column=0, sticky="W", padx=160, pady=10)
+choose_2.grid(row=4, column=0, sticky="W", padx=200, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
-c1.grid(row=3, column=0, stick="W", padx=320, pady=10)
+c1.grid(row=3, column=0, stick="W", padx=50, pady=10)
+
+archiviate = tk.IntVar()
+c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
+c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 
 if __name__ == '__main__':
     window.mainloop()
@@ -396,6 +438,4 @@ if __name__ == '__main__':
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: check errori download (soprattutto documenti)
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
-    # TODO: risolvere problema emoji
-
     # TODO: LEGGERE CHAT ARCHIVIATE
