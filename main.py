@@ -360,8 +360,28 @@ def getChatFromCSV():
     for i in range(0, len(names)):
         if 'str' in names[i]:
             break
-        found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
-        chatLabels.append(found)
+        try:
+            found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
+            chatLabels.append(found)
+        except: #se non lo trovo nelle principali cerco in archivio
+            menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+            menuDots.click()
+            archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
+            archiv.click()
+            try:
+                found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
+                actionChains = ActionChains(driver)
+                actionChains.context_click(found).perform()
+                estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+                estrai.click()
+                time.sleep(10)
+                goBack = driver.find_element_by_xpath(
+                '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+                goBack.click()
+                found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
+                chatLabels.append(found)
+            except: pass #ERRORE DI RICERCA
+
     iterChatList(chatLabels, driver)
     resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
     window.update()
@@ -422,4 +442,4 @@ if __name__ == '__main__':
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: check errori download (soprattutto documenti)
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
-    # TODO: scraping da file di chat archiviate
+    # TODO: ERORRE DI RICERCA, METTERE UN OUTPUT TIPO "CONTATTO NON TROVATO"
