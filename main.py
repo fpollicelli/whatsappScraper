@@ -303,7 +303,7 @@ def saveImgVidAud(name, driver):
                         mediaType = '.mpeg'
                     except:
                         noMedia = True
-                        print("altro tipo di media")
+                        #print("altro tipo di media")
             if noMedia == False:
                 image_src = image.get_attribute("src")
                 final_image = get_file_content_chrome(driver, image_src)
