@@ -386,23 +386,19 @@ def moveArchiviate(driver):
     archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
     archiv.click()
     chatLabels = []
-    recentList = driver.find_elements_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div')
+    recentList = driver.find_elements_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
-    #chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
-    i=1
-    for chat in chatLabels:
-        print(i)
-        i = 1+i
+    chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
+
     for chat in chatLabels:
         actionChains = ActionChains(driver)
         actionChains.context_click(chat).perform()
         estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
         estrai.click()
-        chatLabels.remove(chat)
-        time.sleep(5)
-    #goBack = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
-    #goBack.click()
+        time.sleep(10)
+    goBack = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+    goBack.click()
     return
 
 
@@ -438,4 +434,3 @@ if __name__ == '__main__':
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: check errori download (soprattutto documenti)
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
-    # TODO: LEGGERE CHAT ARCHIVIATE
