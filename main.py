@@ -353,31 +353,20 @@ def getChatFromCSV():
     nomeFile = os.path.basename(filename)
     choose_1.configure(text=nomeFile)
     driver = openChrome()
-    recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     chatLabels = []
     f = open(filename, 'r')
     line = f.read()
-    name = line.split(",")
-
-    if (archiviate.get() == 1):
-        moveArchiviate(driver)
-
-    for i in range (0, len(name)):
-        if 'str' in name[i]:
+    names = line.split(",")
+    for i in range(0, len(names)):
+        if 'str' in names[i]:
             break
-        for chat in recentList:
-            chat.click()
-            time.sleep(WAIT_FOR_CHAT_TO_LOAD)
-            label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
-            chatName = label[0].get_attribute('title')
-            if name[i] in chatName:
-                chatLabels.append(chat)
-    chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
-                         reverse=False)
+        found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
+        chatLabels.append(found)
+    iterChatList(chatLabels, driver)
     resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
     window.update()
     driver.close()
-    return chatLabels
+    return
 
 
 def moveArchiviate(driver):
@@ -430,7 +419,7 @@ c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 if __name__ == '__main__':
     window.mainloop()
 
-    # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: check errori download (soprattutto documenti)
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
+    # TODO: scraping da file di chat archiviate
