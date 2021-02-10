@@ -239,18 +239,18 @@ def saveDoc(name, driver):
             #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
 #REMOVE
-def move_to_download_folder(downloadPath, FileName, dest):
-    got_file = False
-    while got_file == False:
-        try:
-            currentFile = downloadPath+FileName
-            got_file = True
-        except:
-            print ("Attendere il completamento del download")
-    time.sleep(5)
-    fileDestination = dest+FileName
-    os.rename(currentFile, fileDestination)
-    return
+# def move_to_download_folder(downloadPath, FileName, dest):
+#     got_file = False
+#     while got_file == False:
+#         try:
+#             currentFile = downloadPath+FileName
+#             got_file = True
+#         except:
+#             print ("Attendere il completamento del download")
+#     time.sleep(5)
+#     fileDestination = dest+FileName
+#     os.rename(currentFile, fileDestination)
+#     return
 
 
 def saveImgVidAud(name, driver):
@@ -260,7 +260,7 @@ def saveImgVidAud(name, driver):
     try:
         noMedia_xpath ="//span[text()='Nessun media']"
         time.sleep(5)
-        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
+        WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
         noMedia = True
     except:
         noMedia = False
@@ -393,11 +393,9 @@ if __name__ == '__main__':
     window.mainloop()
 
     # TODO: VELOCIZZARE PROCESSO DI CHAT DA FILE
-    # TODO: LEGGERE CHAT ARCHIVIATE
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
-    # TODO: cancellare feedback quando lo scraping è terminato (cliccando uno dei due pulsanti)
-    # TODO: ridurre tempo attesa caricamento media
     # TODO: check errori download (soprattutto documenti)
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
     # TODO: risolvere problema emoji
 
+    # TODO: LEGGERE CHAT ARCHIVIATE
