@@ -173,7 +173,7 @@ def getChatLabels():
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
-    resultLabel.grid(row=4, column=0, stick='W', padx=10, pady=10)
+    resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
     window.update()
     driver.close()
     return
@@ -374,7 +374,7 @@ def getChatFromCSV():
                 chatLabels.append(chat)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
                          reverse=False)
-    resultLabel.grid(row=4, column=0, stick='W', padx=10, pady=10)
+    resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
     window.update()
     driver.close()
     return chatLabels
