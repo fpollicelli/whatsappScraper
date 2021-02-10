@@ -126,14 +126,14 @@ def readMessages(name, driver):
             except NoSuchElementException:
                 pass
     f.close()
-    hashing(name,'.csv')   #Creazione del doppio hash del file contenente le chat
+    hashing('Scraped/Chat/'+name,'.csv')   #Creazione del doppio hash del file contenente le chat
 
     return
 
 def hashing(name,extension):
     hash_md5 = hashlib.md5()
     sha512 = hashlib.sha512()
-    with open('Scraped/Chat/'+name+extension, "rb") as f:
+    with open(name+extension, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     md5Digest = hash_md5.hexdigest()
@@ -223,7 +223,7 @@ def saveDoc(name, driver):
     try:
         noMedia_xpath ="//span[text()='Nessun documento']"
         time.sleep(5)
-        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
+        WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
         noMedia = True
     except:
         noMedia = False
@@ -265,7 +265,7 @@ def saveImgVidAud(name, driver):
     try:
         noMedia_xpath ="//span[text()='Nessun media']"
         time.sleep(5)
-        WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
+        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
         noMedia = True
     except:
         noMedia = False
