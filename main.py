@@ -111,7 +111,7 @@ def readMessages(name, driver):
         except NoSuchElementException:  # solo emoji nel messaggio
             try:
                 for emoji in messages.find_elements_by_xpath(
-                        ".//img[contains(@class,'selectable-text invisible-space copyable-text')]"
+                        ".//img[contains(@class,'selectable-text copyable-text')]"
                 ):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
