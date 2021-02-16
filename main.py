@@ -88,16 +88,17 @@ def readMessages(name, driver):
             except:pass
         try:
             message = messages.find_element_by_xpath(
-                ".//span[contains(@class,'selectable-text invisible-space copyable-text')]"
+                ".//span[contains(@class,'selectable-text copyable-text')]"
             ).text
             emojis = messages.find_elements_by_xpath(
-                ".//img[contains(@class,'selectable-text invisible-space copyable-text')]")
+                ".//img[contains(@class,'selectable-text copyable-text')]")
 
             if len(emojis) != 0:
                 for emoji in emojis:
                     message = message + emoji.get_attribute("data-plain-text")
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
+
             finalMessage = csvCreator(info,message)
             output.configure(state='normal')
             output.insert(tk.END,finalMessage + '\n')
