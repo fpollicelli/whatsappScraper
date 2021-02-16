@@ -6,6 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 import base64
 from tkinter import filedialog
@@ -45,8 +46,11 @@ def openChrome():
 
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
-    wait = WebDriverWait(driver, 600)
-    time.sleep(15)
+    try:
+        element = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/header/div[1]/div/img'))
+        )
+    except: print('errore di wait')
     return driver
 
 
@@ -183,8 +187,15 @@ def getChatLabels():
 def iterChatList(chatLabels, driver):
     for chat in chatLabels:
         chat.click()
-        time.sleep(WAIT_FOR_CHAT_TO_LOAD)
-        label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
+
+        try:
+            element = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/header/div[2]/div[1]/div/span'))
+            )
+            label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
+        except:
+            print('errore di wait')
+
         chatName = label[0].get_attribute('title')
         if len(chatName) == 0:
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span/span') # se il nome contiene un'emoji, va nello span di sotto
@@ -200,10 +211,22 @@ def saveMedia(name, driver):
     menu.click()
     # time.sleep(20)
     try:
-        info = driver.find_element_by_xpath("//div[@title=\"Info gruppo\"]")
+        try:
+            element = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, '//div[@title=\"Info gruppo\"]'))
+            )
+            info = driver.find_element_by_xpath("//div[@title=\"Info gruppo\"]")
+        except:
+            print('errore di wait')
     except:
-        info = driver.find_element_by_xpath("//div[@title=\"Info contatto\"]")
-    time.sleep(5)
+        try:
+            element = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, '//div[@title=\"Info contatto\"]'))
+            )
+            info = driver.find_element_by_xpath("//div[@title=\"Info contatto\"]")
+        except:
+            print('errore di wait')
+
     info.click()
     media_xpath = '//span[text()="Media, link e documenti"]'
     media = driver.find_element_by_xpath(media_xpath)
@@ -231,15 +254,16 @@ def saveDoc(name, driver):
 
     if noMedia == False:
         try:
-            doc_list= driver.find_elements_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div/div/a/div[1]")
+            doc_list= driver.find_elements_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         except:
             print("Impossibile scaricare il file")
         for document in doc_list :
-            a_tag = document.find_element_by_xpath("..") #prende il tag <a> superiore che contiene il nome del file
+            a_tag = document.find_element_by_xpath('.//button') #prende il tag <a> superiore che contiene il nome del file
             fileName = a_tag.get_attribute("Title")
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
-            time.sleep(5)
+            while not os.path.exists('Scraped/Media/'+fileName):
+                time.sleep(1)
             nameWithoutExt = fileName[:-4]
             hashing('Scraped/Media/'+ nameWithoutExt, '.pdf')
             #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
@@ -287,34 +311,14 @@ def saveImgVidAud(name, driver):
         driver.execute_script("arguments[0].click();", image)
 
         while (lastimg == 'false'):
-            i = datetime.today().strftime('%Y_%m_%d_%H_%M_%S')
             try:
-                image_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div[2]/img"
-                image = driver.find_element_by_xpath(image_xpath)
-                mediaType = '.jpg'
+                downloadXpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[1]/div[2]/div/div[4]/div"
+                download = driver.find_element_by_xpath(downloadXpath)
+                download.click()
             except:
-                try:
-                    image_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/div/div/div/div/div[1]/video"
-                    image = driver.find_element_by_xpath(image_xpath)
-                    mediaType = '.mp4'
-                except:
-                    try:
-                        audio_xpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[2]/div[2]/audio"
-                        image = driver.find_element_by_xpath(audio_xpath)
-                        mediaType = '.mpeg'
-                    except:
-                        noMedia = True
-                        #print("altro tipo di media")
+                print('impossibile scaricare il file')
+                noMedia = True
             if noMedia == False:
-                image_src = image.get_attribute("src")
-                final_image = get_file_content_chrome(driver, image_src)
-                time.sleep(5)
-                filename = dir + str(i) + mediaType
-                base64_img_bytes = final_image.encode('utf-8')
-                with open(filename, 'wb') as file_to_save:
-                    decoded_image_data = base64.decodebytes(base64_img_bytes)
-                    file_to_save.write(decoded_image_data)
-                    hashing('Scraped/Media/'+str(i),mediaType)
                 nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
                 lastimg = nextButton.get_attribute("aria-disabled")
                 nextButton.click()
