@@ -29,7 +29,7 @@ window.resizable(False, False)
 
 
 output = tk.Text(window, height=15, width=100, state='disabled')
-output.grid(row=6, column=0, stick="S", padx=10, pady=10)
+output.grid(row=7, column=0, stick="S", padx=10, pady=10)
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -395,7 +395,9 @@ def getChatFromCSV():
                     goBack.click()
                     found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
                     chatLabels.append(found)
-                except: pass #ERRORE DI RICERCA
+                except:
+                    errorLabel = tk.Label(window, text="Errore: non risultano presenti chat con uno o più dei contatti caricati", font=("Helvetica", 10))
+                    errorLabel.grid(row=6, column=0, stick='W', padx=50, pady=10)
 
         iterChatList(chatLabels, driver)
         resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
