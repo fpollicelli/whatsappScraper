@@ -325,8 +325,9 @@ def saveImgVidAud(name, driver):
                 nextButton.click()
             else:
                 lastimg = True
-        close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
-        close_image_button.click()
+        #time.sleep(3)
+        #close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
+        #close_image_button.click()
         return
 
 def get_file_content_chrome(driver, uri):
