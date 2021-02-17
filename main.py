@@ -47,10 +47,10 @@ def openChrome():
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
     try:
-        element = WebDriverWait(driver, 20).until(
+        element = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/header/div[1]/div/img'))
         )
-    except: print('errore di wait')
+    except: print('Impossibile connettersi a WhatsApp Web')
     return driver
 
 
@@ -75,10 +75,22 @@ def readMessages(name, driver):
             try:
                 vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 vocal.click()
+                try:
+                    time.sleep(5)
+                    down = messages.find_element_by_xpath(".//span[contains(@data-testid,'audio-download')]")
+                    down.click()
+                    time.sleep(5)
+                    try:
+                        element = WebDriverWait(driver, 50).until(
+                            EC.presence_of_element_located((By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
+                        )
+                    except:
+                        print('errore di wait')
+                except: pass
                 downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
                 downContext.click()
                 button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                    (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[3]/div")))
+                    (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[2]/div")))
                 button.click()
                 # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
                 # time.sleep(5)
@@ -207,28 +219,22 @@ def iterChatList(chatLabels, driver):
 
 
 def saveMedia(name, driver):
-    menu = driver.find_element_by_xpath("(//div[@title=\"Menu\"])[2]")
+    menu = driver.find_element_by_xpath("(//div[@title='Menu'])[2]")
     menu.click()
+    info = driver.find_element_by_xpath('//*[@id="main"]')
     # time.sleep(20)
     try:
-        try:
-            element = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, '//div[@title=\"Info gruppo\"]'))
-            )
-            info = driver.find_element_by_xpath("//div[@title=\"Info gruppo\"]")
-        except:
-            print('errore di wait')
+        element = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//div[@title="Info gruppo"]'))
+        )
+        info = driver.find_element_by_xpath('//div[@title="Info gruppo"]')
     except:
-        try:
-            element = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, '//div[@title=\"Info contatto\"]'))
-            )
-            info = driver.find_element_by_xpath("//div[@title=\"Info contatto\"]")
-        except:
-            print('errore di wait')
-
+        element = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//div[@title="Info contatto"]'))
+        )
+        info = driver.find_element_by_xpath('//div[@title="Info contatto"]')
     info.click()
-    media_xpath = '//span[text()="Media, link e documenti"]'
+    media_xpath = '//*[@id="app"]/div/div/div[2]/div[3]/span/div/span/div/div/div[1]/div[2]/div[1]/div/div/div[1]/span'
     media = driver.find_element_by_xpath(media_xpath)
     media.click()
     saveImgVidAud(name, driver)
@@ -298,28 +304,31 @@ def saveImgVidAud(name, driver):
     if noMedia == False:
         try:
             image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div/div[1]/div" #1 media
-            image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+            image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
         except:
             try:
                 image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]" #2 media
-                image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+                image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
             except:
                 image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div" #diversi media
-                image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+                image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
 
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
 
         while (lastimg == 'false'):
             try:
-                downloadXpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[1]/div[2]/div/div[4]/div"
+                downloadXpath = "//div[@title='Scarica']"
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
-            except:
-                print('impossibile scaricare il file')
-                noMedia = True
+            except:pass
             if noMedia == False:
-                nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                try:
+                    element = WebDriverWait(driver, 20).until(
+                        EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
+                    )
+                    nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                except: print("non trovo next button")
                 lastimg = nextButton.get_attribute("aria-disabled")
                 nextButton.click()
             else:
@@ -446,6 +455,5 @@ if __name__ == '__main__':
     window.mainloop()
 
     # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
-    # TODO: check errori download (soprattutto documenti)
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
     # TODO: ERORRE DI RICERCA, METTERE UN OUTPUT TIPO "CONTATTO NON TROVATO"
