@@ -244,6 +244,7 @@ def saveMedia(name, driver):
 
 
 def saveDoc(name, driver):
+    time.sleep(3)
     docs_xpath = '//button[text()="Documenti"]'
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
@@ -303,15 +304,9 @@ def saveImgVidAud(name, driver):
 
     if noMedia == False:
         try:
-            image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div/div[1]/div" #1 media
-            image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
-        except:
-            try:
-                image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]" #2 media
-                image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
-            except:
-                image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div" #diversi media
-                image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+            image_xpath = "//div[contains(@style,'background-image')]" #1 media
+            image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+        except:noMedia== True
 
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
