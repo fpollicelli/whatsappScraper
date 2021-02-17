@@ -90,7 +90,7 @@ def readMessages(name, driver):
                 downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
                 downContext.click()
                 button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                    (By.XPATH, "//*[@id='app']/div/span[4]/div/ul/li[2]/div")))
+                    (By.XPATH, ".//div[contains(@title,'Scarica')]")))
                 button.click()
                 # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
                 # time.sleep(5)
@@ -234,7 +234,7 @@ def saveMedia(name, driver):
         )
         info = driver.find_element_by_xpath('//div[@title="Info contatto"]')
     info.click()
-    media_xpath = '//*[@id="app"]/div/div/div[2]/div[3]/span/div/span/div/div/div[1]/div[2]/div[1]/div/div/div[1]/span'
+    media_xpath = "//span[.='Media, link e documenti']"
     media = driver.find_element_by_xpath(media_xpath)
     media.click()
     saveImgVidAud(name, driver)
