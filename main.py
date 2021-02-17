@@ -456,6 +456,4 @@ c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 if __name__ == '__main__':
     window.mainloop()
 
-    # TODO: CHECK DEGLI ERRORI DI CHIUSURA, CHIUDERE DRIVER NEGLI EXCEPT DEI TRY CATCH
     # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
-    # TODO: ERORRE DI RICERCA, METTERE UN OUTPUT TIPO "CONTATTO NON TROVATO"
