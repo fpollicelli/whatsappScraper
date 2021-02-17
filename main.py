@@ -8,15 +8,10 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-import base64
 from tkinter import filedialog
 import os
-from datetime import datetime
-import urllib.request
 import hashlib
 import tkinter as tk
-
-WAIT_FOR_CHAT_TO_LOAD = 20  # in secondi
 message_dic = {}
 
 user = os.environ["USERNAME"]
@@ -183,19 +178,27 @@ def getChatLabels():
     chatLabels = []
 
     if (archiviate.get() == 1):
-        moveArchiviate(driver)
+        chatLabelsDeArch = moveArchiviate(driver)
 
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
-    iterChatList(chatLabels, driver)
+    #iterChatList(chatLabels, driver)
+    archiviaChat(chatLabelsDeArch,driver)
     resultLabel.grid(row=5, column=0, stick='W', padx=50, pady=10)
     window.update()
     driver.close()
     return
 
-
+def archiviaChat(chatLabelsDeArch,driver):
+    for chat in chatLabelsDeArch:
+        actionChains = ActionChains(driver)
+        actionChains.context_click(chat).perform()
+        archivia = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+        archivia.click()
+        time.sleep(10)
+    return
 def iterChatList(chatLabels, driver):
     for chat in chatLabels:
         chat.click()
@@ -410,6 +413,16 @@ def moveArchiviate(driver):
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
 
+    chatNames = []
+    for chat in chatLabels:
+        label = chat.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
+        for labels in label:
+            print(labels.get_attribute('title'))
+            chatNames.append(labels.get_attribute('title'))
+    for names in chatNames:
+        if names == '':
+            chatNames.remove(names)
+
     for chat in chatLabels:
         actionChains = ActionChains(driver)
         actionChains.context_click(chat).perform()
@@ -418,8 +431,7 @@ def moveArchiviate(driver):
         time.sleep(10)
     goBack = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
     goBack.click()
-    return
-
+    return chatNames
 
 
 
