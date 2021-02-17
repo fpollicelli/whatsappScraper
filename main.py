@@ -189,7 +189,7 @@ def iterChatList(chatLabels, driver):
         chat.click()
 
         try:
-            element = WebDriverWait(driver, 10).until(
+            element = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/header/div[2]/div[1]/div/span'))
             )
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
@@ -256,8 +256,8 @@ def saveDoc(name, driver):
         try:
             doc_list= driver.find_elements_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         except:
-            print("Impossibile scaricare il file")
-        for document in doc_list :
+            doc_list = driver.find_element_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
+        for document in doc_list:
             a_tag = document.find_element_by_xpath('.//button') #prende il tag <a> superiore che contiene il nome del file
             fileName = a_tag.get_attribute("Title")
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
@@ -356,41 +356,42 @@ def getChatFromCSV():
                                                       "*.*")))
 
     nomeFile = os.path.basename(filename)
-    choose_1.configure(text=nomeFile)
-    driver = openChrome()
-    chatLabels = []
-    f = open(filename, 'r')
-    line = f.read()
-    names = line.split(",")
-    for i in range(0, len(names)):
-        if 'str' in names[i]:
-            break
-        try:
-            found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
-            chatLabels.append(found)
-        except: #se non lo trovo nelle principali cerco in archivio
-            menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
-            menuDots.click()
-            archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
-            archiv.click()
+    if nomeFile != "":
+        choose_1.configure(text=nomeFile)
+        driver = openChrome()
+        chatLabels = []
+        f = open(filename, 'r')
+        line = f.read()
+        names = line.split(",")
+        for i in range(0, len(names)):
+            if 'str' in names[i]:
+                break
             try:
-                found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
-                actionChains = ActionChains(driver)
-                actionChains.context_click(found).perform()
-                estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
-                estrai.click()
-                time.sleep(10)
-                goBack = driver.find_element_by_xpath(
-                '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
-                goBack.click()
-                found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
+                found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
                 chatLabels.append(found)
-            except: pass #ERRORE DI RICERCA
+            except: #se non lo trovo nelle principali cerco in archivio
+                menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+                menuDots.click()
+                archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
+                archiv.click()
+                try:
+                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
+                    actionChains = ActionChains(driver)
+                    actionChains.context_click(found).perform()
+                    estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+                    estrai.click()
+                    time.sleep(10)
+                    goBack = driver.find_element_by_xpath(
+                    '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+                    goBack.click()
+                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
+                    chatLabels.append(found)
+                except: pass #ERRORE DI RICERCA
 
-    iterChatList(chatLabels, driver)
-    resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
-    window.update()
-    driver.close()
+        iterChatList(chatLabels, driver)
+        resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
+        window.update()
+        driver.close()
     return
 
 
