@@ -224,20 +224,15 @@ def saveMedia(name, driver):
     info = driver.find_element_by_xpath('//*[@id="main"]')
     # time.sleep(20)
     try:
-        try:
-            element = WebDriverWait(driver, 20).until(
-                EC.element_to_be_clickable((By.XPATH, '//div[@title="Info gruppo"]'))
-            )
-            info = driver.find_element_by_xpath('//div[@title="Info gruppo"]')
-        except:pass
+        element = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//div[@title="Info gruppo"]'))
+        )
+        info = driver.find_element_by_xpath('//div[@title="Info gruppo"]')
     except:
-        try:
-            element = WebDriverWait(driver, 20).until(
-                EC.element_to_be_clickable((By.XPATH, '//div[@title="Info contatto"]'))
-            )
-            info = driver.find_element_by_xpath('//div[@title="Info contatto"]')
-        except:pass
-
+        element = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, '//div[@title="Info contatto"]'))
+        )
+        info = driver.find_element_by_xpath('//div[@title="Info contatto"]')
     info.click()
     media_xpath = '//*[@id="app"]/div/div/div[2]/div[3]/span/div/span/div/div/div[1]/div[2]/div[1]/div/div/div[1]/span'
     media = driver.find_element_by_xpath(media_xpath)
@@ -309,28 +304,31 @@ def saveImgVidAud(name, driver):
     if noMedia == False:
         try:
             image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div/div[1]/div" #1 media
-            image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+            image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
         except:
             try:
                 image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]" #2 media
-                image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+                image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
             except:
                 image_xpath = "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div[1]/div[2]/div" #diversi media
-                image = WebDriverWait(driver, 10).until(lambda driver: driver.find_element_by_xpath(image_xpath))
+                image = WebDriverWait(driver, 50).until(lambda driver: driver.find_element_by_xpath(image_xpath))
 
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
 
         while (lastimg == 'false'):
             try:
-                downloadXpath = "//*[@id='app']/div/span[3]/div/div/div[2]/div[1]/div[2]/div/div[4]/div"
+                downloadXpath = "//div[@title='Scarica']"
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
-            except:
-                print('impossibile scaricare il file')
-                noMedia = True
+            except:pass
             if noMedia == False:
-                nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                try:
+                    element = WebDriverWait(driver, 20).until(
+                        EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
+                    )
+                    nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                except: print("non trovo next button")
                 lastimg = nextButton.get_attribute("aria-disabled")
                 nextButton.click()
             else:
