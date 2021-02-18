@@ -52,7 +52,10 @@ def openChrome():
         element = WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/header/div[1]/div/img'))
         )
-    except: print('Impossibile connettersi a WhatsApp Web')
+    except:
+        output_label_2.configure(text='Impossibile connettersi a WhatsApp Web')
+        window.update()
+
     return driver
 
 
@@ -216,7 +219,7 @@ def saveMedia(name, driver):
         element = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/header/div[3]/div/div[2]/span/div/ul/li[1]/div'))
         )
-        info = driver.find_element_by_xpath('//*[@id="main"]/header/div[3]/div/div[2]/span/div/ul/li[1]/div')
+        info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
     except:
         print("non riesco a cliccare su info")
     info.click()
@@ -414,7 +417,7 @@ choose_label.grid(row=2, column=0, sticky="E", padx=50, pady=10)
 choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
 
-output_label = tk.Label(text="Result: ")
+output_label = tk.Label(text="Risulato: ")
 output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
 
 output_label_2 = tk.Label(text="")
