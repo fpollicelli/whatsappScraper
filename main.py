@@ -18,7 +18,7 @@ message_dic = {}
 user = os.environ["USERNAME"]
 
 window = tk.Tk()
-window.geometry("900x550")
+window.geometry("900x600")
 window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
@@ -26,18 +26,22 @@ window.resizable(False, False)
 
 #outputut = tk.Text(window, height=15, width=100, state='disabled')
 ##outputut.grid(row=7, column=0, stick="S", padx=10, pady=10)
-tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'))
+tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
+
 tree.heading('Data', text="Data",anchor = tk.W)
 tree.heading('Ora', text="Ora",anchor = tk.W)
 tree.heading('Mittente', text="Mittente",anchor = tk.W)
 tree.heading('Messaggio', text="Messaggio",anchor = tk.W)
-tree.column('#0', minwidth=0, width=0)
-tree.column('#1', minwidth=100, width= 100)
-tree.column('#2',minwidth=100, width= 100)
-tree.column('#3',minwidth=150,width= 150)
-tree.column('#4',minwidth=150,width= 400)
-
-tree.grid(row=7, column=0, padx=50, pady=10, stick='W')
+tree.column('#0', minwidth=0,stretch=tk.NO, width=0)
+tree.column('#1', minwidth=90,stretch=tk.NO, width= 90)
+tree.column('#2',minwidth=70,stretch=tk.NO, width= 70)
+tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
+tree.column('#4',minwidth=150,stretch=tk.NO,width= 400)
+style = ttk.Style(window)
+tree.grid(row=7, column=0, padx=10, pady=10, stick='W')
+style.theme_use("clam")
+style.configure("Treeview", background="white",
+                fieldbackground="white", foreground="white")
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -462,8 +466,8 @@ title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca Pollicelli")
 credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
 
-chooses = tk.Label(window, text="Cosa vuoi fare?", font=("Helvetica", 12))
-chooses.grid(row=2, column=0, sticky="W", padx=50, pady=20)
+#chooses = tk.Label(window, text="Cosa vuoi fare?", font=("Helvetica", 12))
+#chooses.grid(row=2, column=0, sticky="W", padx=50, pady=20)
 
 choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=4, column=0, sticky="W", padx=50, pady=10)
