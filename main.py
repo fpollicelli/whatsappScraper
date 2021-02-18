@@ -159,6 +159,7 @@ def hashing(name,extension):
 
 def getChatLabels():
     output_label_2.configure(text="")
+    tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
     if (archiviate.get() == 1):
@@ -317,6 +318,7 @@ def get_file_content_chrome(driver, uri):
 
 def getChatFromCSV():
     output_label_2.configure(text="")
+    tree.delete(*tree.get_children())
     filename = filedialog.askopenfilename(initialdir="/",title="Seleziona un file",filetypes=(("CSV files","*.csv*"),("all files","*.*")))
     nomeFile = os.path.basename(filename)
     if nomeFile != "":
@@ -409,7 +411,7 @@ choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
 output_label = tk.Label(text="Result: ")
 output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
 
-output_label_2 = tk.Label(text="bla bla bla, ciuccia ")
+output_label_2 = tk.Label(text="")
 output_label_2.grid(row=3, column=0, sticky="W", padx=100, pady=10)
 
 
