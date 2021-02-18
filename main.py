@@ -26,9 +26,9 @@ tree.column('#0', minwidth=0,stretch=tk.NO, width=0)
 tree.column('#1', minwidth=90,stretch=tk.NO, width= 90)
 tree.column('#2',minwidth=70,stretch=tk.NO, width= 70)
 tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
-tree.column('#4',minwidth=150,stretch=tk.NO,width= 400)
+tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
 style = ttk.Style(window)
-tree.grid(row=8, column=0, padx=10, pady=10, stick='W')
+tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
@@ -157,11 +157,8 @@ def hashing(name,extension):
     f_hash.write('\n')
     return
 
-resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=('Helvetica', 10))
-
-
 def getChatLabels():
-    resultLabel.grid_forget()
+    output_label_2.configure(text="")
     driver = openChrome()
     chatLabels = []
     if (archiviate.get() == 1):
@@ -173,7 +170,7 @@ def getChatLabels():
     iterChatList(chatLabels, driver)
     if (archiviate.get() == 1):
         archiviaChat(chatLabelsDeArch,driver)
-    resultLabel.grid(row=6, column=0, stick='W', padx=50, pady=10)
+    output_label_2.configure(text="Scraping terminato con successo!")
     window.update()
     driver.close()
     return
@@ -319,7 +316,7 @@ def get_file_content_chrome(driver, uri):
     return result
 
 def getChatFromCSV():
-    resultLabel.grid_forget()
+    output_label_2.configure(text="")
     filename = filedialog.askopenfilename(initialdir="/",title="Seleziona un file",filetypes=(("CSV files","*.csv*"),("all files","*.*")))
     nomeFile = os.path.basename(filename)
     if nomeFile != "":
@@ -354,11 +351,10 @@ def getChatFromCSV():
                     found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
                     chatLabels.append(found)
                 except:
-                    errorLabel = tk.Label(window, text="Errore: non risultano presenti chat con uno o più dei contatti caricati", font=("Helvetica", 10))
-                    errorLabel.grid(row=7, column=0, stick='W', padx=50, pady=10)
+                    output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
 
         iterChatList(chatLabels, driver)
-        resultLabel.grid(row=6, column=0, stick='W', padx=10, pady=10)
+        output_label_2.configure(text="Scraping terminato con successo!")
         window.update()
         driver.close()
     return
@@ -399,24 +395,31 @@ title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
 credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca Pollicelli")
-credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
+credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
 choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
-choose_1.grid(row=5, column=0, sticky="W", padx=50, pady=10)
+choose_1.grid(row=2, column=0, sticky="E", padx=250, pady=10)
 
 choose_label = tk.Label(text="____________________________________", bg="white", fg="white")
-choose_label.grid(row=5, column=0, sticky="W", padx=200, pady=10)
+choose_label.grid(row=2, column=0, sticky="E", padx=50, pady=10)
 
 choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
-choose_2.grid(row=4, column=0, sticky="W", padx=50, pady=10)
+choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
+
+output_label = tk.Label(text="Result: ")
+output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
+
+output_label_2 = tk.Label(text="bla bla bla, ciuccia ")
+output_label_2.grid(row=3, column=0, sticky="W", padx=100, pady=10)
+
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
-c1.grid(row=3, column=0, stick="W", padx=50, pady=10)
+c1.grid(row=1, column=0, stick="W", padx=50, pady=10)
 
 archiviate = tk.IntVar()
 c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
-c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
+c2.grid(row=1, column=0, stick="W", padx=200, pady=10)
 
 
 if __name__ == '__main__':
