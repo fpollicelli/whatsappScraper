@@ -206,6 +206,7 @@ def iterChatList(chatLabels, driver):
         readMessages(chatName, driver)
         if (save_media.get() == 1):
             saveMedia(chatName, driver)
+            hashingMedia()
     return
 
 
@@ -227,7 +228,6 @@ def saveMedia(name, driver):
     saveImgVidAud(name, driver)
     saveDoc(name, driver)
     return
-
 
 def saveDoc(name, driver):
     time.sleep(3)
@@ -255,10 +255,6 @@ def saveDoc(name, driver):
             fileName = a_tag.get_attribute("Title")
             fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
-            while not os.path.exists('Scraped/Media/'+fileName):
-                time.sleep(1)
-            nameWithoutExt = fileName[:-4]
-            hashing('Scraped/Media/'+ nameWithoutExt, '.pdf')
     return
 
 def saveImgVidAud(name, driver):
@@ -394,7 +390,12 @@ def moveArchiviate(driver):
     goBack.click()
     return chatNames
 
-
+def hashingMedia():
+    directory = r'C:\Users\Routi\PycharmProjects\whatsappScraperProgetto\Scraped\Media'
+    for filename in os.listdir(directory):
+        file = os.path.splitext(filename)
+        hashing('Scraped/Media/'+ file[0], file[1])
+    return
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
@@ -422,4 +423,3 @@ c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 if __name__ == '__main__':
     window.mainloop()
     #todo: mettere errori in output;
-    #todo: fare hashing documenti scaricati;
