@@ -184,7 +184,7 @@ def getChatLabels():
     for label in recentList:
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
-    #iterChatList(chatLabels, driver)
+    iterChatList(chatLabels, driver)
     archiviaChat(chatLabelsDeArch,driver)
     resultLabel.grid(row=5, column=0, stick='W', padx=50, pady=10)
     window.update()
@@ -193,8 +193,9 @@ def getChatLabels():
 
 def archiviaChat(chatLabelsDeArch,driver):
     for chat in chatLabelsDeArch:
+        chatElement = driver.find_element_by_xpath("//span[contains(@title,'" + chat + "')]")
         actionChains = ActionChains(driver)
-        actionChains.context_click(chat).perform()
+        actionChains.context_click(chatElement).perform()
         archivia = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
         archivia.click()
         time.sleep(10)
@@ -417,7 +418,6 @@ def moveArchiviate(driver):
     for chat in chatLabels:
         label = chat.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
         for labels in label:
-            print(labels.get_attribute('title'))
             chatNames.append(labels.get_attribute('title'))
     for names in chatNames:
         if names == '':
