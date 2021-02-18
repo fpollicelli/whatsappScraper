@@ -221,6 +221,7 @@ def saveMedia(name, driver):
             EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
         )
         info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
+        info.click()
     except:
         try:
             element = WebDriverWait(driver, 20).until(
@@ -248,7 +249,6 @@ def saveMedia(name, driver):
         saveImgVidAud(name, driver)
         saveDoc(name, driver)
     except:
-        print("non riesco a cliccare su media")
         output_label_2.configure(text="non riesco a cliccare su media")
         window.update()
     return
@@ -439,7 +439,7 @@ choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
 output_label = tk.Label(text="Risultato: ")
 output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
 
-output_label_2 = tk.Label(text="")
+output_label_2 = tk.Label(text="scraper pronto")
 output_label_2.grid(row=3, column=0, sticky="W", padx=100, pady=10)
 
 
