@@ -220,11 +220,16 @@ def saveMedia(name, driver):
     except:
         print("non riesco a cliccare su info")
     info.click()
-    media_xpath = "//span[.='Media, link e documenti']"
-    media = driver.find_element_by_xpath(media_xpath)
-    media.click()
-    saveImgVidAud(name, driver)
-    saveDoc(name, driver)
+    try:
+        element = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[text()='Media, link e documenti']"))
+        )
+        media = driver.find_element_by_xpath("//span[text()='Media, link e documenti']")
+        media.click()
+        saveImgVidAud(name, driver)
+        saveDoc(name, driver)
+    except:
+        print("non riesco a cliccare su media")
     return
 
 def saveDoc(name, driver):
