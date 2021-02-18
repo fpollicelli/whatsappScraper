@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import tkinter.ttk as ttk
 from tkinter import filedialog
 import os
 import hashlib
@@ -23,8 +24,8 @@ window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 
 
-output = tk.Text(window, height=15, width=100, state='disabled')
-output.grid(row=7, column=0, stick="S", padx=10, pady=10)
+#output = tk.Text(window, height=15, width=100, state='disabled')
+##output.grid(row=7, column=0, stick="S", padx=10, pady=10)
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -111,9 +112,9 @@ def readMessages(name, driver):
             info = info.get_attribute("data-pre-plain-text")
 
             finalMessage = csvCreator(info,message)
-            output.configure(state='normal')
-            output.insert(tk.END,finalMessage + '\n')
-            output.configure(state='disabled')
+            #output.configure(state='normal')
+            #output.insert(tk.END,finalMessage + '\n')
+            #output.configure(state='disabled')
             window.update()
             f.write(finalMessage)
             f.write('\n')
@@ -128,9 +129,9 @@ def readMessages(name, driver):
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
                     finalMessage = csvCreator(info, message)
-                    output.configure(state='normal')
-                    output.insert(tk.END, finalMessage + '\n')
-                    output.configure(state='disabled')
+                    #output.configure(state='normal')
+                    #output.insert(tk.END, finalMessage + '\n')
+                    #output.configure(state='disabled')
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -165,21 +166,17 @@ def csvCreator(info,message):
     mittente = mittente.split(':')[0].strip()
     finalMessage = data+","+ora+","+mittente+","+message
     return finalMessage
-
-
 resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=('Helvetica', 10))
 
 
 def getChatLabels():
-    output.config(state=tk.NORMAL)
-    output.delete(1.0, 'end')
+    #output.config(state=tk.NORMAL)
+    #output.delete(1.0, 'end')
     resultLabel.grid_forget()
     driver = openChrome()
     chatLabels = []
-
     if (archiviate.get() == 1):
         chatLabelsDeArch = moveArchiviate(driver)
-
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
@@ -200,10 +197,10 @@ def archiviaChat(chatLabelsDeArch,driver):
         archivia.click()
         time.sleep(10)
     return
+
 def iterChatList(chatLabels, driver):
     for chat in chatLabels:
         chat.click()
-
         try:
             element = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/header/div[2]/div[1]/div/span'))
@@ -351,8 +348,8 @@ def get_file_content_chrome(driver, uri):
     return result
 
 def getChatFromCSV():
-    output.config(state=tk.NORMAL)
-    output.delete(1.0, 'end')
+    #output.config(state=tk.NORMAL)
+    #output.delete(1.0, 'end')
     resultLabel.grid_forget()
     filename = filedialog.askopenfilename(initialdir="/",
                                           title="Seleziona un file",
@@ -458,6 +455,22 @@ archiviate = tk.IntVar()
 c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
 c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 
+
+
+
+
+tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'))
+tree.heading('Data', text="Data",anchor = tk.W)
+tree.heading('Ora', text="Ora",anchor = tk.W)
+tree.heading('Mittente', text="Mittente",anchor = tk.W)
+tree.heading('Messaggio', text="Messaggio",anchor = tk.W)
+tree.column('#0', minwidth=0, width=0)
+tree.column('#1', minwidth=0, width= 100)
+tree.column('#2',minwidth=0, width= 100)
+tree.column('#3',minwidth=0,width= 150)
+tree.column('#4',minwidth=0,width= 400)
+
+tree.grid(row=7, column=0, padx=50, pady=10, stick='W')
 if __name__ == '__main__':
     window.mainloop()
 
