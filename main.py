@@ -24,8 +24,20 @@ window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 
 
-#output = tk.Text(window, height=15, width=100, state='disabled')
-##output.grid(row=7, column=0, stick="S", padx=10, pady=10)
+#outputut = tk.Text(window, height=15, width=100, state='disabled')
+##outputut.grid(row=7, column=0, stick="S", padx=10, pady=10)
+tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'))
+tree.heading('Data', text="Data",anchor = tk.W)
+tree.heading('Ora', text="Ora",anchor = tk.W)
+tree.heading('Mittente', text="Mittente",anchor = tk.W)
+tree.heading('Messaggio', text="Messaggio",anchor = tk.W)
+tree.column('#0', minwidth=0, width=0)
+tree.column('#1', minwidth=0, width= 100)
+tree.column('#2',minwidth=0, width= 100)
+tree.column('#3',minwidth=0,width= 150)
+tree.column('#4',minwidth=0,width= 400)
+
+tree.grid(row=7, column=0, padx=50, pady=10, stick='W')
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -53,7 +65,7 @@ def openChrome():
 def readMessages(name, driver):
     message_dic[name] = []
     f = open('Scraped/Chat/'+name+'.csv', 'w', encoding='utf-8')
-    f.write('Data,Ora,Mittente,Messaggio')
+    f.write('Data,Ora,Mittente,Messaggio\n')
     #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
     while trovato == False:
@@ -110,9 +122,14 @@ def readMessages(name, driver):
                     message = message + emoji.get_attribute("data-plain-text")
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
-
             finalMessage = csvCreator(info,message)
-            #output.configure(state='normal')
+            oraData = info[info.find('[') + 1: info.find(']') + 1]
+            ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+            data = oraData[oraData.find(' ') + 1: oraData.find(']')]
+            mittente = info.split(']')[1].strip()
+            mittente = mittente.split(':')[0].strip()
+            tree.insert("", 0, values=(data, ora, mittente, message))
+            #outputut.configure(state='normal')
             #output.insert(tk.END,finalMessage + '\n')
             #output.configure(state='disabled')
             window.update()
@@ -129,6 +146,12 @@ def readMessages(name, driver):
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
                     finalMessage = csvCreator(info, message)
+                    oraData = info[info.find('[') + 1: info.find(']') + 1]
+                    ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                    data = oraData[oraData.find(' ') + 1: oraData.find(']')]
+                    mittente = info.split(']')[1].strip()
+                    mittente = mittente.split(':')[0].strip()
+                    tree.insert("", 0, values=(data, ora, mittente, message))
                     #output.configure(state='normal')
                     #output.insert(tk.END, finalMessage + '\n')
                     #output.configure(state='disabled')
@@ -456,21 +479,6 @@ c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate,
 c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 
 
-
-
-
-tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'))
-tree.heading('Data', text="Data",anchor = tk.W)
-tree.heading('Ora', text="Ora",anchor = tk.W)
-tree.heading('Mittente', text="Mittente",anchor = tk.W)
-tree.heading('Messaggio', text="Messaggio",anchor = tk.W)
-tree.column('#0', minwidth=0, width=0)
-tree.column('#1', minwidth=0, width= 100)
-tree.column('#2',minwidth=0, width= 100)
-tree.column('#3',minwidth=0,width= 150)
-tree.column('#4',minwidth=0,width= 400)
-
-tree.grid(row=7, column=0, padx=50, pady=10, stick='W')
 if __name__ == '__main__':
     window.mainloop()
 
