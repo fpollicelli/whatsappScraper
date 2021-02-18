@@ -53,12 +53,15 @@ def openChrome():
             EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/header/div[1]/div/img'))
         )
     except:
-        output_label_2.configure(text='Impossibile connettersi a WhatsApp Web')
+        output_label_2.configure(text='impossibile connettersi a WhatsApp Web')
         window.update()
+        driver.close()
     return driver
 
 
 def readMessages(name, driver):
+    output_label_2.configure(text="scraping dei messaggi in corso...")
+    window.update()
     message_dic[name] = []
     f = open('Scraped/Chat/'+name+'.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio\n')
@@ -74,6 +77,8 @@ def readMessages(name, driver):
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
     for messages in messageContainer:
         if (save_media.get() == 1):
+            output_label_2.configure(text="salvataggio degli audio in corso...")
+            window.update()
             try:
                 vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 vocal.click()
@@ -143,6 +148,8 @@ def readMessages(name, driver):
             except NoSuchElementException:
                 pass
     f.close()
+    output_label_2.configure(text="generazione del doppio hash della chat in corso...")
+    window.update()
     hashing('Scraped/Chat/'+name,'.csv')   #Creazione del doppio hash del file contenente le chat
     return
 
@@ -161,11 +168,14 @@ def hashing(name,extension):
     return
 
 def getChatLabels():
-    output_label_2.configure(text="")
+    output_label_2.configure(text="apertura di WhatsApp Web in corso...")
+    window.update()
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
     if (archiviate.get() == 1):
+        output_label_2.configure(text="spostamento delle chat archiviate in generali in corso...")
+        window.update()
         chatLabelsDeArch = moveArchiviate(driver)
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     for label in recentList:
@@ -173,10 +183,15 @@ def getChatLabels():
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
     if (archiviate.get() == 1):
+        output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+        window.update()
         archiviaChat(chatLabelsDeArch,driver)
     output_label_2.configure(text="Scraping terminato con successo!")
     window.update()
     driver.close()
+    path = r'C:\Users\Routi\PycharmProjects\whatsappScraperProgetto\Scraped'
+    path = os.path.realpath(path)
+    os.startfile(path)
     return
 
 def archiviaChat(chatLabelsDeArch,driver):
@@ -190,6 +205,8 @@ def archiviaChat(chatLabelsDeArch,driver):
     return
 
 def iterChatList(chatLabels, driver):
+    output_label_2.configure(text="caricamento delle chat in corso...")
+    window.update()
     for chat in chatLabels:
         chat.click()
         try:
@@ -208,6 +225,8 @@ def iterChatList(chatLabels, driver):
         readMessages(chatName, driver)
         if (save_media.get() == 1):
             saveMedia(chatName, driver)
+            output_label_2.configure(text="generazione del doppio hash dei media in corso...")
+            window.update()
             hashingMedia()
     return
 
@@ -254,6 +273,8 @@ def saveMedia(name, driver):
     return
 
 def saveDoc(name, driver):
+    output_label_2.configure(text="salvataggio dei documenti in corso...")
+    window.update()
     time.sleep(3)
     docs_xpath = '//button[text()="Documenti"]'
     docs = driver.find_element_by_xpath(docs_xpath)
@@ -282,6 +303,8 @@ def saveDoc(name, driver):
     return
 
 def saveImgVidAud(name, driver):
+    output_label_2.configure(text="apertura dei media in corso...")
+    window.update()
     dir = 'Scraped/Media/'
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -340,7 +363,7 @@ def get_file_content_chrome(driver, uri):
     return result
 
 def getChatFromCSV():
-    output_label_2.configure(text="")
+    output_label_2.configure(text="ricerca delle chat selezionate in corso...")
     tree.delete(*tree.get_children())
     filename = filedialog.askopenfilename(initialdir="/",title="Seleziona un file",filetypes=(("CSV files","*.csv*"),("all files","*.*")))
     nomeFile = os.path.basename(filename)
@@ -379,7 +402,7 @@ def getChatFromCSV():
                     output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
 
         iterChatList(chatLabels, driver)
-        output_label_2.configure(text="Scraping terminato con successo!")
+        output_label_2.configure(text="scraping terminato con successo.")
         window.update()
         driver.close()
     return
@@ -436,7 +459,7 @@ choose_label.grid(row=2, column=0, sticky="E", padx=50, pady=10)
 choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
 
-output_label = tk.Label(text="Risultato: ")
+output_label = tk.Label(text="Log: ")
 output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
 
 output_label_2 = tk.Label(text="scraper pronto")
@@ -454,4 +477,3 @@ c2.grid(row=1, column=0, stick="W", padx=200, pady=10)
 
 if __name__ == '__main__':
     window.mainloop()
-    #todo: mettere errori in output;
