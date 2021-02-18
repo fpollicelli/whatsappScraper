@@ -55,7 +55,6 @@ def openChrome():
     except:
         output_label_2.configure(text='Impossibile connettersi a WhatsApp Web')
         window.update()
-
     return driver
 
 
@@ -88,7 +87,8 @@ def readMessages(name, driver):
                             EC.presence_of_element_located((By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
                         )
                     except:
-                        print('errore di wait')
+                        output_label_2.configure(text="Impossibile scaricare l'audio")
+                        window.update()
                 except: pass
                 downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
                 downContext.click()
@@ -198,7 +198,8 @@ def iterChatList(chatLabels, driver):
             )
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
         except:
-            print('errore di wait')
+            output_label_2.configure(text="Impossibile caricare le chat")
+            window.update()
 
         chatName = label[0].get_attribute('title')
         if len(chatName) == 0:
@@ -217,12 +218,27 @@ def saveMedia(name, driver):
     info = driver.find_element_by_xpath('//*[@id="main"]')
     try:
         element = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/header/div[3]/div/div[2]/span/div/ul/li[1]/div'))
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
         )
         info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
     except:
-        print("non riesco a cliccare su info")
-    info.click()
+        try:
+            element = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
+            )
+            info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto')]")
+            info.click()
+        except:
+            try:
+                element = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info lista broadcast')]"))
+                )
+                info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
+                info.click()
+            except:
+                output_label_2.configure(text="non riesco a cliccare su info")
+                window.update()
+
     try:
         element = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, "//span[text()='Media, link e documenti']"))
@@ -233,6 +249,8 @@ def saveMedia(name, driver):
         saveDoc(name, driver)
     except:
         print("non riesco a cliccare su media")
+        output_label_2.configure(text="non riesco a cliccare su media")
+        window.update()
     return
 
 def saveDoc(name, driver):
@@ -279,7 +297,7 @@ def saveImgVidAud(name, driver):
         try:
             image_xpath = "//div[contains(@style,'background-image')]" #1 media
             image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
-        except:noMedia== True
+        except:noMedia= True
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
         while (lastimg == 'false'):
@@ -294,9 +312,10 @@ def saveImgVidAud(name, driver):
                         EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
                     )
                     nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
-                except: print("non trovo next button")
-                lastimg = nextButton.get_attribute("aria-disabled")
-                nextButton.click()
+                    lastimg = nextButton.get_attribute("aria-disabled")
+                    nextButton.click()
+                except:
+                    lastimg = True
             else:
                 lastimg = True
         #time.sleep(3)
@@ -417,7 +436,7 @@ choose_label.grid(row=2, column=0, sticky="E", padx=50, pady=10)
 choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
 
-output_label = tk.Label(text="Risulato: ")
+output_label = tk.Label(text="Risultato: ")
 output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
 
 output_label_2 = tk.Label(text="")
