@@ -18,7 +18,7 @@ message_dic = {}
 user = os.environ["USERNAME"]
 
 window = tk.Tk()
-window.geometry("900x600")
+window.geometry("900x650")
 window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
@@ -38,7 +38,7 @@ tree.column('#2',minwidth=70,stretch=tk.NO, width= 70)
 tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
 tree.column('#4',minwidth=150,stretch=tk.NO,width= 400)
 style = ttk.Style(window)
-tree.grid(row=7, column=0, padx=10, pady=10, stick='W')
+tree.grid(row=8, column=0, padx=10, pady=10, stick='W')
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
@@ -211,7 +211,7 @@ def getChatLabels():
     iterChatList(chatLabels, driver)
     if (archiviate.get() == 1):
         archiviaChat(chatLabelsDeArch,driver)
-    resultLabel.grid(row=5, column=0, stick='W', padx=50, pady=10)
+    resultLabel.grid(row=6, column=0, stick='W', padx=50, pady=10)
     window.update()
     driver.close()
     return
@@ -388,7 +388,8 @@ def getChatFromCSV():
 
     nomeFile = os.path.basename(filename)
     if nomeFile != "":
-        choose_1.configure(text=nomeFile)
+        choose_label.configure(text=nomeFile)
+        choose_label.configure(fg="black")
         driver = openChrome()
         chatLabels = []
         f = open(filename, 'r')
@@ -419,10 +420,10 @@ def getChatFromCSV():
                     chatLabels.append(found)
                 except:
                     errorLabel = tk.Label(window, text="Errore: non risultano presenti chat con uno o più dei contatti caricati", font=("Helvetica", 10))
-                    errorLabel.grid(row=6, column=0, stick='W', padx=50, pady=10)
+                    errorLabel.grid(row=7, column=0, stick='W', padx=50, pady=10)
 
         iterChatList(chatLabels, driver)
-        resultLabel.grid(row=5, column=0, stick='W', padx=10, pady=10)
+        resultLabel.grid(row=6, column=0, stick='W', padx=10, pady=10)
         window.update()
         driver.close()
     return
@@ -470,10 +471,13 @@ credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
 #chooses.grid(row=2, column=0, sticky="W", padx=50, pady=20)
 
 choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
-choose_1.grid(row=4, column=0, sticky="W", padx=50, pady=10)
+choose_1.grid(row=5, column=0, sticky="W", padx=50, pady=10)
 
-choose_2 = tk.Button(text="Scraping Contatti", command=lambda:threading.Thread(target=getChatLabels).start())
-choose_2.grid(row=4, column=0, sticky="W", padx=200, pady=10)
+choose_label = tk.Label(text="____________________________________", bg="white", fg="white")
+choose_label.grid(row=5, column=0, sticky="W", padx=200, pady=10)
+
+choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
+choose_2.grid(row=4, column=0, sticky="W", padx=50, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
