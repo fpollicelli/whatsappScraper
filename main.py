@@ -1,4 +1,3 @@
-import threading
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -7,27 +6,18 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
-import tkinter.ttk as ttk
-from tkinter import filedialog
-import os
-import hashlib
-import tkinter as tk
+import time ; import tkinter.ttk as ttk ; from tkinter import filedialog
+import os ; import hashlib ; import tkinter as tk ; import threading
+
 message_dic = {}
-
 user = os.environ["USERNAME"]
-
 window = tk.Tk()
 window.geometry("900x650")
 window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 
-
-#outputut = tk.Text(window, height=15, width=100, state='disabled')
-##outputut.grid(row=7, column=0, stick="S", padx=10, pady=10)
 tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
-
 tree.heading('Data', text="Data",anchor = tk.W)
 tree.heading('Ora', text="Ora",anchor = tk.W)
 tree.heading('Mittente', text="Mittente",anchor = tk.W)
@@ -70,7 +60,6 @@ def readMessages(name, driver):
     message_dic[name] = []
     f = open('Scraped/Chat/'+name+'.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio\n')
-    #scroll  = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME) #funziona parz
     trovato = False
     while trovato == False:
         try:
@@ -79,7 +68,6 @@ def readMessages(name, driver):
         except:
             driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
             trovato = False
-    #driver.execute_script("return arguments[0].scrollIntoView(true);", element)
 
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
     for messages in messageContainer:
@@ -104,15 +92,6 @@ def readMessages(name, driver):
                 button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
                     (By.XPATH, ".//div[contains(@title,'Scarica')]")))
                 button.click()
-                # MOVE DEGLI AUDIO NELLA CARTELLA GIUSTA
-                # time.sleep(5)
-                # src = r"C:\Users" + "\\" + user + "\\Download\\"
-                # dest = 'Scraped/' + name + '/Media/'
-                # if not os.path.exists(dest):
-                #     os.makedirs(dest)
-                # files = os.listdir(src)
-                # for audio in files:
-                #     shutil.move(src + audio, dest)
             except:pass
         try:
             message = messages.find_element_by_xpath(
@@ -126,16 +105,14 @@ def readMessages(name, driver):
                     message = message + emoji.get_attribute("data-plain-text")
             info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
             info = info.get_attribute("data-pre-plain-text")
-            finalMessage = csvCreator(info,message)
             oraData = info[info.find('[') + 1: info.find(']') + 1]
             ora = oraData[oraData.find('[') + 1: oraData.find(',')]
             data = oraData[oraData.find(' ') + 1: oraData.find(']')]
             mittente = info.split(']')[1].strip()
             mittente = mittente.split(':')[0].strip()
             tree.insert("", 0, values=(data, ora, mittente, message))
-            #outputut.configure(state='normal')
-            #output.insert(tk.END,finalMessage + '\n')
-            #output.configure(state='disabled')
+            finalMessage = data + "," + ora + "," + mittente + "," + message
+
             window.update()
             f.write(finalMessage)
             f.write('\n')
@@ -144,21 +121,18 @@ def readMessages(name, driver):
         except NoSuchElementException:  # solo emoji nel messaggio
             try:
                 for emoji in messages.find_elements_by_xpath(
-                        ".//img[contains(@class,'selectable-text copyable-text')]"
-                ):
+                        ".//img[contains(@class,'selectable-text copyable-text')]"):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
                     message = emoji.get_attribute("data-plain-text")
-                    finalMessage = csvCreator(info, message)
+
                     oraData = info[info.find('[') + 1: info.find(']') + 1]
                     ora = oraData[oraData.find('[') + 1: oraData.find(',')]
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
                     tree.insert("", 0, values=(data, ora, mittente, message))
-                    #output.configure(state='normal')
-                    #output.insert(tk.END, finalMessage + '\n')
-                    #output.configure(state='disabled')
+                    finalMessage = data + "," + ora + "," + mittente + "," + message
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -167,7 +141,6 @@ def readMessages(name, driver):
                 pass
     f.close()
     hashing('Scraped/Chat/'+name,'.csv')   #Creazione del doppio hash del file contenente le chat
-
     return
 
 def hashing(name,extension):
@@ -184,21 +157,10 @@ def hashing(name,extension):
     f_hash.write('\n')
     return
 
-
-def csvCreator(info,message):
-    oraData = info[info.find('[') + 1: info.find(']')+1]
-    ora = oraData[oraData.find('[') + 1: oraData.find(',')]
-    data = oraData[oraData.find(' ')+ 1: oraData.find(']')]
-    mittente =  info.split(']')[1].strip()
-    mittente = mittente.split(':')[0].strip()
-    finalMessage = data+","+ora+","+mittente+","+message
-    return finalMessage
 resultLabel = tk.Label(window, text="Scraping terminato con successo!", font=('Helvetica', 10))
 
 
 def getChatLabels():
-    #output.config(state=tk.NORMAL)
-    #output.delete(1.0, 'end')
     resultLabel.grid_forget()
     driver = openChrome()
     chatLabels = []
@@ -251,7 +213,6 @@ def saveMedia(name, driver):
     menu = driver.find_element_by_xpath("(//div[@title='Menu'])[2]")
     menu.click()
     info = driver.find_element_by_xpath('//*[@id="main"]')
-    # time.sleep(20)
     try:
         element = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/header/div[3]/div/div[2]/span/div/ul/li[1]/div'))
@@ -265,7 +226,6 @@ def saveMedia(name, driver):
     media.click()
     saveImgVidAud(name, driver)
     saveDoc(name, driver)
-
     return
 
 
@@ -299,22 +259,7 @@ def saveDoc(name, driver):
                 time.sleep(1)
             nameWithoutExt = fileName[:-4]
             hashing('Scraped/Media/'+ nameWithoutExt, '.pdf')
-            #move_to_download_folder("C:\\Users\\"+user+"\\Download\\", fileName, dir) #lo salva in download, quindi lo sposto nella cartella giusta
     return
-#REMOVE
-# def move_to_download_folder(downloadPath, FileName, dest):
-#     got_file = False
-#     while got_file == False:
-#         try:
-#             currentFile = downloadPath+FileName
-#             got_file = True
-#         except:
-#             print ("Attendere il completamento del download")
-#     time.sleep(5)
-#     fileDestination = dest+FileName
-#     os.rename(currentFile, fileDestination)
-#     return
-
 
 def saveImgVidAud(name, driver):
     dir = 'Scraped/Media/'
@@ -333,10 +278,8 @@ def saveImgVidAud(name, driver):
             image_xpath = "//div[contains(@style,'background-image')]" #1 media
             image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
         except:noMedia== True
-
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
-
         while (lastimg == 'false'):
             try:
                 downloadXpath = "//div[@title='Scarica']"
@@ -376,16 +319,8 @@ def get_file_content_chrome(driver, uri):
     return result
 
 def getChatFromCSV():
-    #output.config(state=tk.NORMAL)
-    #output.delete(1.0, 'end')
     resultLabel.grid_forget()
-    filename = filedialog.askopenfilename(initialdir="/",
-                                          title="Seleziona un file",
-                                          filetypes=(("CSV files",
-                                                      "*.csv*"),
-                                                     ("all files",
-                                                      "*.*")))
-
+    filename = filedialog.askopenfilename(initialdir="/",title="Seleziona un file",filetypes=(("CSV files","*.csv*"),("all files","*.*")))
     nomeFile = os.path.basename(filename)
     if nomeFile != "":
         choose_label.configure(text=nomeFile)
@@ -460,15 +395,11 @@ def moveArchiviate(driver):
     return chatNames
 
 
-
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
 credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca Pollicelli")
 credit_label.grid(row=1, column=0, stick="N", padx=0, pady=0)
-
-#chooses = tk.Label(window, text="Cosa vuoi fare?", font=("Helvetica", 12))
-#chooses.grid(row=2, column=0, sticky="W", padx=50, pady=20)
 
 choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=5, column=0, sticky="W", padx=50, pady=10)
@@ -490,5 +421,5 @@ c2.grid(row=3, column=0, stick="W", padx=200, pady=10)
 
 if __name__ == '__main__':
     window.mainloop()
-
-    # TODO: migliorare attesa caricamento chat (wait for chat to load in loop)
+    #todo: mettere errori in output;
+    #todo: fare hashing documenti scaricati;
