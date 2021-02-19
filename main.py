@@ -28,12 +28,14 @@ tree.column('#0', minwidth=0,stretch=tk.NO, width=0)
 tree.column('#1', minwidth=90,stretch=tk.NO, width= 90)
 tree.column('#2',minwidth=70,stretch=tk.NO, width= 70)
 tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
-tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
+tree.column('#4',minwidth=150,stretch=tk.NO,width= 566)
 style = ttk.Style(window)
-tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
-ysb = ttk.Scrollbar(orient=tk.VERTICAL, command= tree.yview)
-ysb.grid(row=0, column=1, sticky='ns')
-ysb.place(x=887, y=230, relheight=0.558, anchor='ne')
+tree.grid(row=5, column=0, padx=10, pady=10, stick='NEWS')
+
+
+vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
+vsbar.place(x=870, y=231, height=360)
+tree.configure(yscrollcommand=vsbar.set)
 
 style.theme_use("clam")
 style.configure("Treeview", background="white",
@@ -465,7 +467,7 @@ def hashingMedia():
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
-credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca Pollicelli")
+credit_label = tk.Label(window, text="Autori: Domenico Palmisano e Francesca Pollicelli")
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
 choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
