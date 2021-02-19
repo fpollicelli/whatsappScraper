@@ -34,6 +34,11 @@ style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
 
+def findChromeDriver():
+    for root, dirs, files in os.walk(pyExePath):
+        if "chromedriver.exe" in files:
+            return os.path.join(root, "chromedriver.exe")
+
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
@@ -45,7 +50,7 @@ def openChrome():
     options.add_argument("--remote-debugging-port=9222")
     options.add_argument(
         "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-    driver = webdriver.Chrome(options=options, executable_path=pyExePath+'/main/chromedriver.exe')
+    driver = webdriver.Chrome(options=options, executable_path=findChromeDriver())
 
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
