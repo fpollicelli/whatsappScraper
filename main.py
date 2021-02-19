@@ -12,11 +12,12 @@ import os ; import hashlib ; import tkinter as tk ; import threading
 message_dic = {}
 user = os.environ["USERNAME"]
 window = tk.Tk()
-window.geometry("900x650")
+window.geometry("900x570")
 window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
+NAMES = []
 
 tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
 
@@ -28,18 +29,17 @@ tree.column('#0', minwidth=0,stretch=tk.NO, width=0)
 tree.column('#1', minwidth=90,stretch=tk.NO, width= 90)
 tree.column('#2',minwidth=70,stretch=tk.NO, width= 70)
 tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
-tree.column('#4',minwidth=150,stretch=tk.NO,width= 566)
+tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
 style = ttk.Style(window)
-tree.grid(row=5, column=0, padx=10, pady=10, stick='NEWS')
-
-
-vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
-vsbar.place(x=870, y=231, height=360)
-tree.configure(yscrollcommand=vsbar.set)
+tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
+ysb = ttk.Scrollbar(orient=tk.VERTICAL, command= tree.yview)
+ysb.place(x=887, y=230, relheight=0.558, anchor='ne')
 
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
+
+
 
 def findChromeDriver():
     for root, dirs, files in os.walk(pyExePath):
@@ -193,6 +193,45 @@ def getChatLabels():
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
+    if len(NAMES) != 0:
+        for i in range(0, len(NAMES)):
+            if 'str' in NAMES[i]:
+                break
+            try:
+                found = driver.find_element_by_xpath(".//span[contains(@title,'"+NAMES[i]+"')]")
+                chatLabels.append(found)
+            except: #se non lo trovo nelle principali cerco in archivio
+                menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+                menuDots.click()
+                archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
+                archiv.click()
+                try:
+                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
+                    actionChains = ActionChains(driver)
+                    actionChains.context_click(found).perform()
+                    estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+                    estrai.click()
+                    time.sleep(10)
+                    goBack = driver.find_element_by_xpath(
+                    '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+                    goBack.click()
+                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
+                    chatLabels.append(found)
+                    output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+                    window.update()
+                    archiv = 1
+                except:
+                    output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
+
+        iterChatList(chatLabels, driver)
+        if archiv == 1:
+            output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+            window.update()
+            archiviaChat(NAMES, driver)
+        output_label_2.configure(text="scraping terminato con successo.")
+        window.update()
+        driver.close()
+
     if (archiviate.get() == 1):
         output_label_2.configure(text="spostamento delle chat archiviate in generali in corso...")
         window.update()
@@ -256,21 +295,21 @@ def saveMedia(name, driver):
     menu.click()
     info = driver.find_element_by_xpath('//*[@id="main"]')
     try:
-        element = WebDriverWait(driver, 20).until(
+        element = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
         )
         info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
         info.click()
     except:
         try:
-            element = WebDriverWait(driver, 20).until(
+            element = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
             )
             info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto')]")
             info.click()
         except:
             try:
-                element = WebDriverWait(driver, 20).until(
+                element = WebDriverWait(driver, 5).until(
                     EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info lista broadcast')]"))
                 )
                 info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
@@ -300,47 +339,32 @@ def saveDoc(name, driver):
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
     dir = pyExePath+'/Scraped/Media/'
+    noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        noMedia_xpath ="//span[text()='Nessun documento']"
-        time.sleep(5)
-        WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
-        noMedia = True
-    except:
-        noMedia = False
-
-    if noMedia == False:
-        try:
-            doc_list= driver.find_elements_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
-        except:
-            doc_list = driver.find_element_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
+        element = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH,"//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
+        )
+        doc_list = driver.find_element_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         for document in doc_list:
-            a_tag = document.find_element_by_xpath('.//button') #prende il tag <a> superiore che contiene il nome del file
-            fileName = a_tag.get_attribute("Title")
-            fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
+    except: noMedia = True
     return
 
 def saveImgVidAud(name, driver):
     output_label_2.configure(text="apertura dei media in corso...")
     window.update()
     dir = pyExePath+'/Scraped/Media/'
+    noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        noMedia_xpath ="//span[text()='Nessun media']"
-        time.sleep(5)
-        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
-        noMedia = True
-    except:
+        element = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@style,'background-image')]"))
+        )
+        image = driver.find_element_by_xpath("//div[contains(@style,'background-image')]")
         noMedia = False
-
-    if noMedia == False:
-        try:
-            image_xpath = "//div[contains(@style,'background-image')]" #1 media
-            image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
-        except:noMedia= True
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
         while (lastimg == 'false'):
@@ -349,22 +373,18 @@ def saveImgVidAud(name, driver):
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
             except:pass
-            if noMedia == False:
-                try:
-                    element = WebDriverWait(driver, 20).until(
-                        EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
-                    )
-                    nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
-                    lastimg = nextButton.get_attribute("aria-disabled")
-                    nextButton.click()
-                except:
-                    lastimg = True
-            else:
-                lastimg = True
-        #time.sleep(3)
-        #close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
-        #close_image_button.click()
-        return
+            try:
+                element = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
+                )
+                nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                lastimg = nextButton.get_attribute("aria-disabled")
+                nextButton.click()
+            except:
+                lastimg = 'true'
+    except:
+        noMedia = True
+    return
 
 def get_file_content_chrome(driver, uri):
     result = driver.execute_async_script("""
@@ -390,41 +410,10 @@ def getChatFromCSV():
     if nomeFile != "":
         choose_label.configure(text=nomeFile)
         choose_label.configure(fg="black")
-        driver = openChrome()
-        chatLabels = []
         f = open(filename, 'r')
         line = f.read()
-        names = line.split(",")
-        for i in range(0, len(names)):
-            if 'str' in names[i]:
-                break
-            try:
-                found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
-                chatLabels.append(found)
-            except: #se non lo trovo nelle principali cerco in archivio
-                menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
-                menuDots.click()
-                archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
-                archiv.click()
-                try:
-                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
-                    actionChains = ActionChains(driver)
-                    actionChains.context_click(found).perform()
-                    estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
-                    estrai.click()
-                    time.sleep(10)
-                    goBack = driver.find_element_by_xpath(
-                    '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
-                    goBack.click()
-                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
-                    chatLabels.append(found)
-                except:
-                    output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
-
-        iterChatList(chatLabels, driver)
-        output_label_2.configure(text="scraping terminato con successo.")
-        window.update()
-        driver.close()
+        global NAMES
+        NAMES = line.split(",")
     return
 
 
@@ -467,31 +456,33 @@ def hashingMedia():
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
+output_label = tk.Label(text="Log: ")
+output_label.grid(row=6, column=0, sticky="W", padx=10, pady=10)
+
+output_label_2 = tk.Label(text="scraper pronto",bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
+output_label_2.configure(width = 50)
+output_label_2.grid(row=6, column=0, sticky="W", padx=45, pady=10)
+
 credit_label = tk.Label(window, text="Autori: Domenico Palmisano e Francesca Pollicelli")
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
-choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
-choose_1.grid(row=2, column=0, sticky="E", padx=250, pady=10)
+choose_1 = tk.Button(text="Caricare lista contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
+choose_1.grid(row=1, column=0, sticky="W", padx=10, pady=10)
 
-choose_label = tk.Label(text="____________________________________", bg="white", fg="white")
-choose_label.grid(row=2, column=0, sticky="E", padx=50, pady=10)
+choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
+choose_label.configure(width = 30)
+choose_label.grid(row=1, column=0, sticky="W", padx=150, pady=10)
 
-choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
-choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
-
-output_label = tk.Label(text="Log: ")
-output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
-
-output_label_2 = tk.Label(text="scraper pronto")
-output_label_2.grid(row=3, column=0, sticky="W", padx=100, pady=10)
+choose_2 = tk.Button(text="Avvia scraper", command=lambda:threading.Thread(target=getChatLabels).start())
+choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
-c1.grid(row=1, column=0, stick="W", padx=50, pady=10)
+c1.grid(row=1, column=0, stick="E", padx=350, pady=10)
 
 archiviate = tk.IntVar()
 c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
-c2.grid(row=1, column=0, stick="W", padx=200, pady=10)
+c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 
 
 if __name__ == '__main__':
@@ -499,6 +490,5 @@ if __name__ == '__main__':
     #todo: scrollbar
     #todo: riorganizzare interfaccia
     #todo: test programma su diversi pc
-    #todo: velocizzare download immagini
     #todo: rimuovere profilo 1, commentare per renderlo più generale
     #todo: rimuovere console di debug da applicativo
