@@ -12,11 +12,12 @@ import os ; import hashlib ; import tkinter as tk ; import threading
 message_dic = {}
 user = os.environ["USERNAME"]
 window = tk.Tk()
-window.geometry("900x650")
+window.geometry("900x570")
 window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
+NAMES = []
 
 tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
 
@@ -37,6 +38,8 @@ ysb.place(x=887, y=230, relheight=0.558, anchor='ne')
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
+
+
 
 def findChromeDriver():
     for root, dirs, files in os.walk(pyExePath):
@@ -190,6 +193,45 @@ def getChatLabels():
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
+    if len(NAMES) != 0:
+        for i in range(0, len(NAMES)):
+            if 'str' in NAMES[i]:
+                break
+            try:
+                found = driver.find_element_by_xpath(".//span[contains(@title,'"+NAMES[i]+"')]")
+                chatLabels.append(found)
+            except: #se non lo trovo nelle principali cerco in archivio
+                menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+                menuDots.click()
+                archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
+                archiv.click()
+                try:
+                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
+                    actionChains = ActionChains(driver)
+                    actionChains.context_click(found).perform()
+                    estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+                    estrai.click()
+                    time.sleep(10)
+                    goBack = driver.find_element_by_xpath(
+                    '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+                    goBack.click()
+                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
+                    chatLabels.append(found)
+                    output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+                    window.update()
+                    archiv = 1
+                except:
+                    output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
+
+        iterChatList(chatLabels, driver)
+        if archiv == 1:
+            output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+            window.update()
+            archiviaChat(NAMES, driver)
+        output_label_2.configure(text="scraping terminato con successo.")
+        window.update()
+        driver.close()
+
     if (archiviate.get() == 1):
         output_label_2.configure(text="spostamento delle chat archiviate in generali in corso...")
         window.update()
@@ -368,41 +410,10 @@ def getChatFromCSV():
     if nomeFile != "":
         choose_label.configure(text=nomeFile)
         choose_label.configure(fg="black")
-        driver = openChrome()
-        chatLabels = []
         f = open(filename, 'r')
         line = f.read()
-        names = line.split(",")
-        for i in range(0, len(names)):
-            if 'str' in names[i]:
-                break
-            try:
-                found = driver.find_element_by_xpath(".//span[contains(@title,'"+names[i]+"')]")
-                chatLabels.append(found)
-            except: #se non lo trovo nelle principali cerco in archivio
-                menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
-                menuDots.click()
-                archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
-                archiv.click()
-                try:
-                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
-                    actionChains = ActionChains(driver)
-                    actionChains.context_click(found).perform()
-                    estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
-                    estrai.click()
-                    time.sleep(10)
-                    goBack = driver.find_element_by_xpath(
-                    '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
-                    goBack.click()
-                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + names[i] + "')]")
-                    chatLabels.append(found)
-                except:
-                    output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
-
-        iterChatList(chatLabels, driver)
-        output_label_2.configure(text="scraping terminato con successo.")
-        window.update()
-        driver.close()
+        global NAMES
+        NAMES = line.split(",")
     return
 
 
@@ -445,31 +456,33 @@ def hashingMedia():
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
-credit_label = tk.Label(window, text="Authors: Domenico Palmisano and Francesca Pollicelli")
+output_label = tk.Label(text="Log: ")
+output_label.grid(row=6, column=0, sticky="W", padx=10, pady=10)
+
+output_label_2 = tk.Label(text="scraper pronto",bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
+output_label_2.configure(width = 50)
+output_label_2.grid(row=6, column=0, sticky="W", padx=45, pady=10)
+
+credit_label = tk.Label(window, text="Autori: Domenico Palmisano e Francesca Pollicelli")
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
-choose_1 = tk.Button(text="Caricare Lista Contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
-choose_1.grid(row=2, column=0, sticky="E", padx=250, pady=10)
+choose_1 = tk.Button(text="Caricare lista contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
+choose_1.grid(row=1, column=0, sticky="W", padx=10, pady=10)
 
-choose_label = tk.Label(text="____________________________________", bg="white", fg="white")
-choose_label.grid(row=2, column=0, sticky="E", padx=50, pady=10)
+choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
+choose_label.configure(width = 30)
+choose_label.grid(row=1, column=0, sticky="W", padx=150, pady=10)
 
-choose_2 = tk.Button(text="Scraping di tutti i contatti", command=lambda:threading.Thread(target=getChatLabels).start())
-choose_2.grid(row=2, column=0, sticky="W", padx=50, pady=10)
-
-output_label = tk.Label(text="Log: ")
-output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
-
-output_label_2 = tk.Label(text="scraper pronto")
-output_label_2.grid(row=3, column=0, sticky="W", padx=100, pady=10)
+choose_2 = tk.Button(text="Avvia scraper", command=lambda:threading.Thread(target=getChatLabels).start())
+choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
-c1.grid(row=1, column=0, stick="W", padx=50, pady=10)
+c1.grid(row=1, column=0, stick="E", padx=350, pady=10)
 
 archiviate = tk.IntVar()
 c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
-c2.grid(row=1, column=0, stick="W", padx=200, pady=10)
+c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 
 
 if __name__ == '__main__':
