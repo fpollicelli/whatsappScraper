@@ -19,6 +19,7 @@ window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 
 tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
+
 tree.heading('Data', text="Data",anchor = tk.W)
 tree.heading('Ora', text="Ora",anchor = tk.W)
 tree.heading('Mittente', text="Mittente",anchor = tk.W)
@@ -30,6 +31,10 @@ tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
 tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
+ysb = ttk.Scrollbar(orient=tk.VERTICAL, command= tree.yview)
+ysb.grid(row=0, column=1, sticky='ns')
+ysb.place(x=887, y=230, relheight=0.558, anchor='ne')
+
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
@@ -48,8 +53,9 @@ def openChrome():
         "safebrowsing.enabled": True
     })
     options.add_argument("--remote-debugging-port=9222")
+    #CREAZIONE PROFILO SOLO PER DEBUG
     options.add_argument(
-        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+       "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver())
 
     # apre whatsapp nel browser
@@ -198,7 +204,7 @@ def getChatLabels():
         output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
         window.update()
         archiviaChat(chatLabelsDeArch,driver)
-    output_label_2.configure(text="Scraping terminato con successo!")
+    output_label_2.configure(text="scraping terminato con successo!")
     window.update()
     driver.close()
     path = pyExePath+'/Scraped'
@@ -477,7 +483,6 @@ output_label.grid(row=3, column=0, sticky="W", padx=50, pady=10)
 output_label_2 = tk.Label(text="scraper pronto")
 output_label_2.grid(row=3, column=0, sticky="W", padx=100, pady=10)
 
-
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
 c1.grid(row=1, column=0, stick="W", padx=50, pady=10)
@@ -493,3 +498,5 @@ if __name__ == '__main__':
     #todo: riorganizzare interfaccia
     #todo: test programma su diversi pc
     #todo: velocizzare download immagini
+    #todo: rimuovere profilo 1, commentare per renderlo più generale
+    #todo: rimuovere console di debug da applicativo
