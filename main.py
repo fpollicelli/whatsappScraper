@@ -442,7 +442,7 @@ def moveArchiviate(driver):
         actionChains.context_click(chat).perform()
         estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
         estrai.click()
-        time.sleep(10)
+        time.sleep(4)
     goBack = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
     goBack.click()
     return chatNames
