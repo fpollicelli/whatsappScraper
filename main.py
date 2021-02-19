@@ -16,6 +16,7 @@ window.geometry("900x650")
 window.title("Whatapp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
+pyExePath = os.path.dirname(os.path.abspath(__file__))
 
 tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
 tree.heading('Data', text="Data",anchor = tk.W)
@@ -36,7 +37,7 @@ style.configure("Treeview", background="white",
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
-        "download.default_directory": r"C:\Users" + "\\" + user + "\PycharmProjects\\whatsappScraperProgetto\\Scraped\\Media",
+        "download.default_directory": pyExePath + "\\Scraped\\Media",
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
@@ -44,7 +45,7 @@ def openChrome():
     options.add_argument("--remote-debugging-port=9222")
     options.add_argument(
         "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-    driver = webdriver.Chrome(options=options, executable_path='chromedriver.exe')
+    driver = webdriver.Chrome(options=options, executable_path=pyExePath+'/main/chromedriver.exe')
 
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
@@ -63,7 +64,10 @@ def readMessages(name, driver):
     output_label_2.configure(text="scraping dei messaggi in corso...")
     window.update()
     message_dic[name] = []
-    f = open('Scraped/Chat/'+name+'.csv', 'w', encoding='utf-8')
+    dir = pyExePath+'/Scraped/Chat/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    f = open(dir+name+'.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio\n')
     trovato = False
     while trovato == False:
@@ -150,7 +154,7 @@ def readMessages(name, driver):
     f.close()
     output_label_2.configure(text="generazione del doppio hash della chat in corso...")
     window.update()
-    hashing('Scraped/Chat/'+name,'.csv')   #Creazione del doppio hash del file contenente le chat
+    hashing(pyExePath+'/Scraped/Chat/'+name,'.csv')   #Creazione del doppio hash del file contenente le chat
     return
 
 def hashing(name,extension):
@@ -162,7 +166,10 @@ def hashing(name,extension):
     md5Digest = hash_md5.hexdigest()
     sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    f_hash = open('Scraped/Hash/hashing.txt', 'a', encoding='utf-8')
+    dir = pyExePath+'/Scraped/Hash/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    f_hash = open(dir + 'hashing.txt', 'a', encoding='utf-8')
     f_hash.write(name+extension+","+sha512_digest)
     f_hash.write('\n')
     return
@@ -189,7 +196,7 @@ def getChatLabels():
     output_label_2.configure(text="Scraping terminato con successo!")
     window.update()
     driver.close()
-    path = r'C:\Users\Routi\PycharmProjects\whatsappScraperProgetto\Scraped'
+    path = pyExePath+'/Scraped'
     path = os.path.realpath(path)
     os.startfile(path)
     return
@@ -279,7 +286,7 @@ def saveDoc(name, driver):
     docs_xpath = '//button[text()="Documenti"]'
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
-    dir = 'Scraped/Media/'
+    dir = pyExePath+'/Scraped/Media/'
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
@@ -305,7 +312,7 @@ def saveDoc(name, driver):
 def saveImgVidAud(name, driver):
     output_label_2.configure(text="apertura dei media in corso...")
     window.update()
-    dir = 'Scraped/Media/'
+    dir = pyExePath+'/Scraped/Media/'
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
@@ -439,10 +446,10 @@ def moveArchiviate(driver):
     return chatNames
 
 def hashingMedia():
-    directory = r'C:\Users\Routi\PycharmProjects\whatsappScraperProgetto\Scraped\Media'
+    directory = pyExePath+'/Scraped/Media/'
     for filename in os.listdir(directory):
         file = os.path.splitext(filename)
-        hashing('Scraped/Media/'+ file[0], file[1])
+        hashing(directory + file[0], file[1])
     return
 title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
@@ -477,3 +484,7 @@ c2.grid(row=1, column=0, stick="W", padx=200, pady=10)
 
 if __name__ == '__main__':
     window.mainloop()
+    #todo: scrollbar
+    #todo: riorganizzare interfaccia
+    #todo: test programma su diversi pc
+    #todo: velocizzare download immagini
