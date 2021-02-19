@@ -32,7 +32,6 @@ tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 ysb = ttk.Scrollbar(orient=tk.VERTICAL, command= tree.yview)
-ysb.grid(row=0, column=1, sticky='ns')
 ysb.place(x=887, y=230, relheight=0.558, anchor='ne')
 
 style.theme_use("clam")
@@ -254,21 +253,21 @@ def saveMedia(name, driver):
     menu.click()
     info = driver.find_element_by_xpath('//*[@id="main"]')
     try:
-        element = WebDriverWait(driver, 20).until(
+        element = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
         )
         info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
         info.click()
     except:
         try:
-            element = WebDriverWait(driver, 20).until(
+            element = WebDriverWait(driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
             )
             info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto')]")
             info.click()
         except:
             try:
-                element = WebDriverWait(driver, 20).until(
+                element = WebDriverWait(driver, 5).until(
                     EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info lista broadcast')]"))
                 )
                 info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
@@ -298,47 +297,32 @@ def saveDoc(name, driver):
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
     dir = pyExePath+'/Scraped/Media/'
+    noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        noMedia_xpath ="//span[text()='Nessun documento']"
-        time.sleep(5)
-        WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
-        noMedia = True
-    except:
-        noMedia = False
-
-    if noMedia == False:
-        try:
-            doc_list= driver.find_elements_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
-        except:
-            doc_list = driver.find_element_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
+        element = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH,"//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
+        )
+        doc_list = driver.find_element_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         for document in doc_list:
-            a_tag = document.find_element_by_xpath('.//button') #prende il tag <a> superiore che contiene il nome del file
-            fileName = a_tag.get_attribute("Title")
-            fileName = fileName[9:-1] #il tag <a> contiene la parola Scarica, la rimuovo per ottenere solo il noe del file
             document.click()
+    except: noMedia = True
     return
 
 def saveImgVidAud(name, driver):
     output_label_2.configure(text="apertura dei media in corso...")
     window.update()
     dir = pyExePath+'/Scraped/Media/'
+    noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        noMedia_xpath ="//span[text()='Nessun media']"
-        time.sleep(5)
-        WebDriverWait(driver, 20).until(lambda driver: driver.find_element_by_xpath(noMedia_xpath))
-        noMedia = True
-    except:
+        element = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@style,'background-image')]"))
+        )
+        image = driver.find_element_by_xpath("//div[contains(@style,'background-image')]")
         noMedia = False
-
-    if noMedia == False:
-        try:
-            image_xpath = "//div[contains(@style,'background-image')]" #1 media
-            image = WebDriverWait(driver, 5).until(lambda driver: driver.find_element_by_xpath(image_xpath))
-        except:noMedia= True
         lastimg = 'false'
         driver.execute_script("arguments[0].click();", image)
         while (lastimg == 'false'):
@@ -347,22 +331,18 @@ def saveImgVidAud(name, driver):
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
             except:pass
-            if noMedia == False:
-                try:
-                    element = WebDriverWait(driver, 20).until(
-                        EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
-                    )
-                    nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
-                    lastimg = nextButton.get_attribute("aria-disabled")
-                    nextButton.click()
-                except:
-                    lastimg = True
-            else:
-                lastimg = True
-        #time.sleep(3)
-        #close_image_button = driver.find_element_by_xpath('//div[@title="Chiudi"]')
-        #close_image_button.click()
-        return
+            try:
+                element = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
+                )
+                nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
+                lastimg = nextButton.get_attribute("aria-disabled")
+                nextButton.click()
+            except:
+                lastimg = 'true'
+    except:
+        noMedia = True
+    return
 
 def get_file_content_chrome(driver, uri):
     result = driver.execute_async_script("""
@@ -497,6 +477,5 @@ if __name__ == '__main__':
     #todo: scrollbar
     #todo: riorganizzare interfaccia
     #todo: test programma su diversi pc
-    #todo: velocizzare download immagini
     #todo: rimuovere profilo 1, commentare per renderlo più generale
     #todo: rimuovere console di debug da applicativo
