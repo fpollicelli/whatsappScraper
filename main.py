@@ -13,7 +13,7 @@ message_dic = {}
 user = os.environ["USERNAME"]
 window = tk.Tk()
 window.geometry("900x570")
-window.title("Whatapp Scraper")
+window.title("WhatsApp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
@@ -456,7 +456,7 @@ def hashingMedia():
         file = os.path.splitext(filename)
         hashing(directory + file[0], file[1])
     return
-title = tk.Label(window, text="Whatapp Scraper", font=("Helvetica", 24))
+title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
 output_label = tk.Label(text="Log: ")
