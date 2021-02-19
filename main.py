@@ -193,6 +193,7 @@ def getChatLabels():
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
+    toArch = []
     if len(NAMES) != 0:
         for i in range(0, len(NAMES)):
             if 'str' in NAMES[i]:
@@ -219,6 +220,7 @@ def getChatLabels():
                     chatLabels.append(found)
                     output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
                     window.update()
+                    toArch.append(NAMES[i])
                     archiv = 1
                 except:
                     output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
@@ -227,10 +229,11 @@ def getChatLabels():
         if archiv == 1:
             output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
             window.update()
-            archiviaChat(NAMES, driver)
+            archiviaChat(toArch, driver)
         output_label_2.configure(text="scraping terminato con successo.")
         window.update()
         driver.close()
+        return
 
     if (archiviate.get() == 1):
         output_label_2.configure(text="spostamento delle chat archiviate in generali in corso...")
