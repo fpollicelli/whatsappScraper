@@ -145,6 +145,7 @@ def readMessages(name, driver):
             data = oraData[oraData.find(' ') + 1: oraData.find(']')]
             mittente = info.split(']')[1].strip()
             mittente = mittente.split(':')[0].strip()
+            message = message.replace("\n", " ")
             tree.insert("", 0, values=(data, ora, mittente, message))
             finalMessage = data + "," + ora + "," + mittente + "," + message
 
@@ -166,6 +167,7 @@ def readMessages(name, driver):
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
+                    message = message.replace("\n", " ")
                     tree.insert("", 0, values=(data, ora, mittente, message))
                     finalMessage = data + "," + ora + "," + mittente + "," + message
                     window.update()
