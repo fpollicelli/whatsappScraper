@@ -32,12 +32,18 @@ tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
 tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
-ysb = ttk.Scrollbar(orient=tk.VERTICAL, command= tree.yview)
-ysb.place(x=887, y=230, relheight=0.558, anchor='ne')
+
+vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
+vsbar.place(x=870, y=145, height=359)
+tree.configure(yscrollcommand=vsbar.set)
 
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
+
+
+
+
 
 
 
