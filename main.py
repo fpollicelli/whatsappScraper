@@ -37,6 +37,10 @@ vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
 vsbar.place(x=870, y=145, height=359)
 tree.configure(yscrollcommand=vsbar.set)
 
+vsbar_o = tk.Scrollbar(window, orient=tk.HORIZONTAL, command=tree.yview)
+vsbar_o.place(x=12, y=484, height=20, width=859)
+tree.configure(xscrollcommand=vsbar_o.set)
+
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
