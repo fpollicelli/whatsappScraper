@@ -1,4 +1,4 @@
-import textwrap
+
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -21,11 +21,7 @@ window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 
-def wrap(string, lenght=100):
-    return '\n'.join(textwrap.wrap(string, lenght))
-
 tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente","Messaggio"), height = 18)
-
 tree.heading('Data', text="Data",anchor = tk.W)
 tree.heading('Ora', text="Ora",anchor = tk.W)
 tree.heading('Mittente', text="Mittente",anchor = tk.W)
@@ -40,8 +36,6 @@ tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
 vsbar.place(x=868, y=189, height=360, width=20)
 tree.configure(yscrollcommand=vsbar.set)
-
-
 
 style.theme_use("clam")
 style.configure("Treeview", background="white",
@@ -62,8 +56,10 @@ def openChrome():
     })
     options.add_argument("--remote-debugging-port=9222")
     #CREAZIONE PROFILO SOLO PER DEBUG
+    '''
     options.add_argument(
        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+    '''
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver())
 
     # apre whatsapp nel browser
@@ -519,6 +515,6 @@ c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 
 if __name__ == '__main__':
     window.mainloop()
-    #todo: test programma su diversi pc
-    #todo: rimuovere profilo 1, commentare per renderlo più generale
-    #todo: rimuovere console di debug da applicativo
+    #done: rimuovere profilo 1, commentare per renderlo più generale
+    #done: rimuovere console da applicativo:
+        #pyinstaller --noconsole --onefile main.py
