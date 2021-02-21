@@ -1,5 +1,3 @@
-
-
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -54,13 +52,16 @@ def openChrome():
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
     })
+
     options.add_argument("--remote-debugging-port=9222")
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
     #CREAZIONE PROFILO SOLO PER DEBUG
     '''
     options.add_argument(
        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
     '''
-    driver = webdriver.Chrome(options=options, executable_path=findChromeDriver())
+    args = ["hide_console", ]
+    driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
 
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
