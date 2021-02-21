@@ -1,3 +1,5 @@
+import textwrap
+
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -12,44 +14,38 @@ import os ; import hashlib ; import tkinter as tk ; import threading
 message_dic = {}
 user = os.environ["USERNAME"]
 window = tk.Tk()
-window.geometry("900x570")
+window.geometry("900x610")
 window.title("WhatsApp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 
-tree = ttk.Treeview(window, columns=("Data", "Ora", "Mittente",'Messaggio'), height = 18)
+def wrap(string, lenght=100):
+    return '\n'.join(textwrap.wrap(string, lenght))
+
+tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente","Messaggio"), height = 18)
 
 tree.heading('Data', text="Data",anchor = tk.W)
 tree.heading('Ora', text="Ora",anchor = tk.W)
 tree.heading('Mittente', text="Mittente",anchor = tk.W)
 tree.heading('Messaggio', text="Messaggio",anchor = tk.W)
-tree.column('#0', minwidth=0,stretch=tk.NO, width=0)
-tree.column('#1', minwidth=90,stretch=tk.NO, width= 90)
-tree.column('#2',minwidth=70,stretch=tk.NO, width= 70)
-tree.column('#3',minwidth=150,stretch=tk.NO,width= 150)
-tree.column('#4',minwidth=150,stretch=tk.NO,width= 565)
+tree.column('#1', minwidth=80,stretch=False, width= 80)
+tree.column('#2',minwidth=60,stretch=False, width= 60)
+tree.column('#3',minwidth=170,stretch=False,width= 170)
+tree.column('#4',minwidth=565,stretch=True,width= 565)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 
 vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
-vsbar.place(x=870, y=145, height=359)
+vsbar.place(x=868, y=189, height=360, width=20)
 tree.configure(yscrollcommand=vsbar.set)
 
-vsbar_o = tk.Scrollbar(window, orient=tk.HORIZONTAL, command=tree.yview)
-vsbar_o.place(x=12, y=484, height=20, width=859)
-tree.configure(xscrollcommand=vsbar_o.set)
+
 
 style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
-
-
-
-
-
-
 
 def findChromeDriver():
     for root, dirs, files in os.walk(pyExePath):
@@ -145,8 +141,14 @@ def readMessages(name, driver):
             data = oraData[oraData.find(' ') + 1: oraData.find(']')]
             mittente = info.split(']')[1].strip()
             mittente = mittente.split(':')[0].strip()
+
             message = message.replace("\n", " ")
-            tree.insert("", 0, values=(data, ora, mittente, message))
+
+            if len(message) > 90:
+                trimMessage = message[:90]
+                tree.insert("", 0, values=(data, ora, mittente, trimMessage+'...'))
+            else:
+                tree.insert("", 0, values=(data, ora, mittente, message))
             finalMessage = data + "," + ora + "," + mittente + "," + message
 
             window.update()
@@ -168,8 +170,13 @@ def readMessages(name, driver):
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
                     message = message.replace("\n", " ")
-                    tree.insert("", 0, values=(data, ora, mittente, message))
+                    if len(message) > 90:
+                        trimMessage = message[:90]
+                        tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
+                    else:
+                        tree.insert("", 0, values=(data, ora, mittente, message))
                     finalMessage = data + "," + ora + "," + mittente + "," + message
+
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -468,6 +475,11 @@ def hashingMedia():
         file = os.path.splitext(filename)
         hashing(directory + file[0], file[1])
     return
+
+def disableEvent(event):
+    return "break"
+tree.bind("<Button-1>", disableEvent)
+
 title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
@@ -481,19 +493,24 @@ output_label_2.grid(row=6, column=0, sticky="W", padx=45, pady=10)
 credit_label = tk.Label(window, text="Autori: Domenico Palmisano e Francesca Pollicelli")
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
+xf = tk.Frame(window, relief=tk.GROOVE, borderwidth=2,width=780, height=70)
+xf.grid(row = 1, column =0,sticky="W", padx=10, pady=10)
+
+tk.Label(xf, text='Opzioni').place(relx=.06, rely=0.04,anchor=tk.W)
+
 choose_1 = tk.Button(text="Caricare lista contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
-choose_1.grid(row=1, column=0, sticky="W", padx=10, pady=10)
+choose_1.grid(row=1, column=0, sticky="W", padx=30, pady=10)
 
 choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
-choose_label.configure(width = 30)
-choose_label.grid(row=1, column=0, sticky="W", padx=150, pady=10)
+choose_label.configure(width = 33)
+choose_label.grid(row=1, column=0, sticky="W", padx=180, pady=10)
 
 choose_2 = tk.Button(text="Avvia scraper", command=lambda:threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
-c1.grid(row=1, column=0, stick="E", padx=350, pady=10)
+c1.grid(row=1, column=0, stick="E", padx=320, pady=10)
 
 archiviate = tk.IntVar()
 c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
@@ -502,8 +519,6 @@ c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 
 if __name__ == '__main__':
     window.mainloop()
-    #todo: scrollbar
-    #todo: riorganizzare interfaccia
     #todo: test programma su diversi pc
     #todo: rimuovere profilo 1, commentare per renderlo più generale
     #todo: rimuovere console di debug da applicativo
