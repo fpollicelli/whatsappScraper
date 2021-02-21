@@ -6,8 +6,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time ; import tkinter.ttk as ttk ; from tkinter import filedialog
-import os ; import hashlib ; import tkinter as tk ; import threading
+import time;
+import tkinter.ttk as ttk;
+from tkinter import filedialog
+import os;
+import hashlib;
+import tkinter as tk;
+import threading
 
 message_dic = {}
 user = os.environ["USERNAME"]
@@ -19,15 +24,15 @@ window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 
-tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente","Messaggio"), height = 18)
-tree.heading('Data', text="Data",anchor = tk.W)
-tree.heading('Ora', text="Ora",anchor = tk.W)
-tree.heading('Mittente', text="Mittente",anchor = tk.W)
-tree.heading('Messaggio', text="Messaggio",anchor = tk.W)
-tree.column('#1', minwidth=80,stretch=False, width= 80)
-tree.column('#2',minwidth=60,stretch=False, width= 60)
-tree.column('#3',minwidth=170,stretch=False,width= 170)
-tree.column('#4',minwidth=565,stretch=True,width= 565)
+tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente", "Messaggio"), height=18)
+tree.heading('Data', text="Data", anchor=tk.W)
+tree.heading('Ora', text="Ora", anchor=tk.W)
+tree.heading('Mittente', text="Mittente", anchor=tk.W)
+tree.heading('Messaggio', text="Messaggio", anchor=tk.W)
+tree.column('#1', minwidth=80, stretch=False, width=80)
+tree.column('#2', minwidth=60, stretch=False, width=60)
+tree.column('#3', minwidth=170, stretch=False, width=170)
+tree.column('#4', minwidth=565, stretch=True, width=565)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 
@@ -39,10 +44,12 @@ style.theme_use("clam")
 style.configure("Treeview", background="white",
                 fieldbackground="white", foreground="white")
 
+
 def findChromeDriver():
     for root, dirs, files in os.walk(pyExePath):
         if "chromedriver.exe" in files:
             return os.path.join(root, "chromedriver.exe")
+
 
 def openChrome():
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
@@ -55,11 +62,11 @@ def openChrome():
 
     options.add_argument("--remote-debugging-port=9222")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    #CREAZIONE PROFILO SOLO PER DEBUG
+    # CREAZIONE PROFILO SOLO PER DEBUG
     '''
     options.add_argument(
-       "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-    '''
+        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+     '''
     args = ["hide_console", ]
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
 
@@ -80,10 +87,10 @@ def readMessages(name, driver):
     output_label_2.configure(text="scraping dei messaggi in corso...")
     window.update()
     message_dic[name] = []
-    dir = pyExePath+'/Scraped/Chat/'
+    dir = pyExePath + '/Scraped/Chat/'
     if not os.path.exists(dir):
         os.makedirs(dir)
-    f = open(dir+name+'.csv', 'w', encoding='utf-8')
+    f = open(dir + name + '.csv', 'w', encoding='utf-8')
     f.write('Data,Ora,Mittente,Messaggio\n')
     trovato = False
     while trovato == False:
@@ -114,13 +121,15 @@ def readMessages(name, driver):
                     except:
                         output_label_2.configure(text="Impossibile scaricare l'audio")
                         window.update()
-                except: pass
+                except:
+                    pass
                 downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
                 downContext.click()
                 button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
                     (By.XPATH, ".//div[contains(@title,'Scarica')]")))
                 button.click()
-            except:pass
+            except:
+                pass
         try:
             message = messages.find_element_by_xpath(
                 ".//span[contains(@class,'selectable-text copyable-text')]"
@@ -143,7 +152,7 @@ def readMessages(name, driver):
 
             if len(message) > 90:
                 trimMessage = message[:90]
-                tree.insert("", 0, values=(data, ora, mittente, trimMessage+'...'))
+                tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
             else:
                 tree.insert("", 0, values=(data, ora, mittente, message))
             finalMessage = data + "," + ora + "," + mittente + "," + message
@@ -183,70 +192,80 @@ def readMessages(name, driver):
     f.close()
     output_label_2.configure(text="generazione del doppio hash della chat in corso...")
     window.update()
-    hashing(pyExePath+'/Scraped/Chat/'+name,'.csv')   #Creazione del doppio hash del file contenente le chat
+    hashing(pyExePath + '/Scraped/Chat/' + name, '.csv')  # Creazione del doppio hash del file contenente le chat
     return
 
-def hashing(name,extension):
+
+def hashing(name, extension):
     hash_md5 = hashlib.md5()
     sha512 = hashlib.sha512()
-    with open(name+extension, "rb") as f:
+    with open(name + extension, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     md5Digest = hash_md5.hexdigest()
     sha512.update(md5Digest.encode('utf-8'))
     sha512_digest = sha512.hexdigest()
-    dir = pyExePath+'/Scraped/Hash/'
+    dir = pyExePath + '/Scraped/Hash/'
     if not os.path.exists(dir):
         os.makedirs(dir)
     f_hash = open(dir + 'hashing.txt', 'a', encoding='utf-8')
-    f_hash.write(name+extension+","+sha512_digest)
+    f_hash.write(name + extension + "," + sha512_digest)
     f_hash.write('\n')
     return
 
 def getChatLabels():
     output_label_2.configure(text="apertura di WhatsApp Web in corso...")
-    window.update()
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
+    archiviat = 0
     toArch = []
+
     if len(NAMES) != 0:
         for i in range(0, len(NAMES)):
             if 'str' in NAMES[i]:
                 break
             try:
-                found = driver.find_element_by_xpath(".//span[contains(@title,'"+NAMES[i]+"')]")
+                found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
                 chatLabels.append(found)
-            except: #se non lo trovo nelle principali cerco in archivio
-                menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
-                menuDots.click()
-                archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
-                archiv.click()
+            except:
+                pass
+
+        try:
+            menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+            menuDots.click()
+            archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
+            archiv.click()
+            for i in range(0, len(NAMES)):
                 try:
-                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
+                    recent = driver.find_element_by_xpath(
+                        ('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div'))
+                    found = recent.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
                     actionChains = ActionChains(driver)
                     actionChains.context_click(found).perform()
                     estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
                     estrai.click()
                     time.sleep(10)
-                    goBack = driver.find_element_by_xpath(
-                    '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
-                    goBack.click()
-                    found = driver.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
-                    chatLabels.append(found)
-                    output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
-                    window.update()
                     toArch.append(NAMES[i])
-                    archiv = 1
+                    archiviat = 1
                 except:
-                    output_label_2.configure(text="Errore: non risultano presenti chat con uno o più dei contatti caricati")
+                    output_label_2.configure(text="errore: contatto non trovato")
 
+            goBack = driver.find_element_by_xpath(
+                '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+            goBack.click()
+            for i in range(0, len(toArch)):
+                found = driver.find_element_by_xpath(".//span[contains(@title,'" + toArch[i] + "')]")
+                chatLabels.append(found)
+        except:
+            pass
         iterChatList(chatLabels, driver)
-        if archiv == 1:
+        if archiviat == 1:
             output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
             window.update()
             archiviaChat(toArch, driver)
         output_label_2.configure(text="scraping terminato con successo.")
+        choose_label.configure(text="")
         window.update()
         driver.close()
         return
@@ -255,6 +274,7 @@ def getChatLabels():
         output_label_2.configure(text="spostamento delle chat archiviate in generali in corso...")
         window.update()
         chatLabelsDeArch = moveArchiviate(driver)
+
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
@@ -263,16 +283,18 @@ def getChatLabels():
     if (archiviate.get() == 1):
         output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
         window.update()
-        archiviaChat(chatLabelsDeArch,driver)
+        archiviaChat(chatLabelsDeArch, driver)
     output_label_2.configure(text="scraping terminato con successo!")
+    choose_label.configure(text="")
     window.update()
     driver.close()
-    path = pyExePath+'/Scraped'
+    path = pyExePath + '/Scraped'
     path = os.path.realpath(path)
     os.startfile(path)
     return
 
-def archiviaChat(chatLabelsDeArch,driver):
+
+def archiviaChat(chatLabelsDeArch, driver):
     for chat in chatLabelsDeArch:
         chatElement = driver.find_element_by_xpath("//span[contains(@title,'" + chat + "')]")
         actionChains = ActionChains(driver)
@@ -281,6 +303,7 @@ def archiviaChat(chatLabelsDeArch,driver):
         archivia.click()
         time.sleep(10)
     return
+
 
 def iterChatList(chatLabels, driver):
     output_label_2.configure(text="caricamento delle chat in corso...")
@@ -298,7 +321,8 @@ def iterChatList(chatLabels, driver):
 
         chatName = label[0].get_attribute('title')
         if len(chatName) == 0:
-            label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span/span') # se il nome contiene un'emoji, va nello span di sotto
+            label = chat.find_elements_by_xpath(
+                '//*[@id="main"]/header/div[2]/div[1]/div/span/span')  # se il nome contiene un'emoji, va nello span di sotto
             chatName = label[0].get_attribute('title')
         readMessages(chatName, driver)
         if (save_media.get() == 1):
@@ -350,6 +374,7 @@ def saveMedia(name, driver):
         window.update()
     return
 
+
 def saveDoc(name, driver):
     output_label_2.configure(text="salvataggio dei documenti in corso...")
     window.update()
@@ -357,24 +382,28 @@ def saveDoc(name, driver):
     docs_xpath = '//button[text()="Documenti"]'
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
-    dir = pyExePath+'/Scraped/Media/'
+    dir = pyExePath + '/Scraped/Media/'
     noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
         element = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH,"//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
+            EC.element_to_be_clickable((By.XPATH,
+                                        "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
         )
-        doc_list = driver.find_element_by_xpath("//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
+        doc_list = driver.find_element_by_xpath(
+            "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         for document in doc_list:
             document.click()
-    except: noMedia = True
+    except:
+        noMedia = True
     return
+
 
 def saveImgVidAud(name, driver):
     output_label_2.configure(text="apertura dei media in corso...")
     window.update()
-    dir = pyExePath+'/Scraped/Media/'
+    dir = pyExePath + '/Scraped/Media/'
     noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -391,10 +420,12 @@ def saveImgVidAud(name, driver):
                 downloadXpath = "//div[@title='Scarica']"
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
-            except:pass
+            except:
+                pass
             try:
                 element = WebDriverWait(driver, 20).until(
-                    EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
+                    EC.element_to_be_clickable(
+                        (By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
                 )
                 nextButton = driver.find_element_by_xpath('//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div')
                 lastimg = nextButton.get_attribute("aria-disabled")
@@ -404,6 +435,7 @@ def saveImgVidAud(name, driver):
     except:
         noMedia = True
     return
+
 
 def get_file_content_chrome(driver, uri):
     result = driver.execute_async_script("""
@@ -421,10 +453,12 @@ def get_file_content_chrome(driver, uri):
         raise Exception("Request failed with status %s" % result)
     return result
 
+
 def getChatFromCSV():
     output_label_2.configure(text="ricerca delle chat selezionate in corso...")
     tree.delete(*tree.get_children())
-    filename = filedialog.askopenfilename(initialdir="/",title="Seleziona un file",filetypes=(("CSV files","*.csv*"),("all files","*.*")))
+    filename = filedialog.askopenfilename(initialdir="/", title="Seleziona un file",
+                                          filetypes=(("CSV files", "*.csv*"), ("all files", "*.*")))
     nomeFile = os.path.basename(filename)
     if nomeFile != "":
         choose_label.configure(text=nomeFile)
@@ -442,7 +476,8 @@ def moveArchiviate(driver):
     archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
     archiv.click()
     chatLabels = []
-    recentList = driver.find_elements_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div/div')
+    recentList = driver.find_elements_by_xpath(
+        '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div/div')
     for label in recentList:
         chatLabels.append(label)
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
@@ -462,19 +497,24 @@ def moveArchiviate(driver):
         estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
         estrai.click()
         time.sleep(4)
-    goBack = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
+    goBack = driver.find_element_by_xpath(
+        '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
     goBack.click()
     return chatNames
 
+
 def hashingMedia():
-    directory = pyExePath+'/Scraped/Media/'
+    directory = pyExePath + '/Scraped/Media/'
     for filename in os.listdir(directory):
         file = os.path.splitext(filename)
         hashing(directory + file[0], file[1])
     return
 
+
 def disableEvent(event):
     return "break"
+
+
 tree.bind("<Button-1>", disableEvent)
 
 title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
@@ -483,39 +523,38 @@ title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 output_label = tk.Label(text="Log: ")
 output_label.grid(row=6, column=0, sticky="W", padx=10, pady=10)
 
-output_label_2 = tk.Label(text="scraper pronto",bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
-output_label_2.configure(width = 50)
+output_label_2 = tk.Label(text="scraper pronto", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
+output_label_2.configure(width=50)
 output_label_2.grid(row=6, column=0, sticky="W", padx=45, pady=10)
 
 credit_label = tk.Label(window, text="Autori: Domenico Palmisano e Francesca Pollicelli")
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
-xf = tk.Frame(window, relief=tk.GROOVE, borderwidth=2,width=780, height=70)
-xf.grid(row = 1, column =0,sticky="W", padx=10, pady=10)
+xf = tk.Frame(window, relief=tk.GROOVE, borderwidth=2, width=780, height=70)
+xf.grid(row=1, column=0, sticky="W", padx=10, pady=10)
 
-tk.Label(xf, text='Opzioni').place(relx=.06, rely=0.04,anchor=tk.W)
+tk.Label(xf, text='Opzioni').place(relx=.06, rely=0.04, anchor=tk.W)
 
-choose_1 = tk.Button(text="Caricare lista contatti",command=lambda:threading.Thread(target=getChatFromCSV).start())
+choose_1 = tk.Button(text="Caricare lista contatti", command=lambda: threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=1, column=0, sticky="W", padx=30, pady=10)
 
-choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove",anchor = 'w')
-choose_label.configure(width = 33)
+choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
+choose_label.configure(width=33)
 choose_label.grid(row=1, column=0, sticky="W", padx=180, pady=10)
 
-choose_2 = tk.Button(text="Avvia scraper", command=lambda:threading.Thread(target=getChatLabels).start())
+choose_2 = tk.Button(text="Avvia scraper", command=lambda: threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
 
 save_media = tk.IntVar()
-c1 = tk.Checkbutton(window, text='Scraping media',variable=save_media, onvalue=1, offvalue=0)
+c1 = tk.Checkbutton(window, text='Scraping media', variable=save_media, onvalue=1, offvalue=0)
 c1.grid(row=1, column=0, stick="E", padx=320, pady=10)
 
 archiviate = tk.IntVar()
-c2 = tk.Checkbutton(window, text='Scraping chat archiviate',variable=archiviate, onvalue=1, offvalue=0)
+c2 = tk.Checkbutton(window, text='Scraping chat archiviate', variable=archiviate, onvalue=1, offvalue=0)
 c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
-
 
 if __name__ == '__main__':
     window.mainloop()
-    #done: rimuovere profilo 1, commentare per renderlo più generale
-    #done: rimuovere console da applicativo:
-        #pyinstaller --noconsole --onefile main.py
+    # done: rimuovere profilo 1, commentare per renderlo più generale
+    # done: rimuovere console da applicativo:
+    # pyinstaller --noconsole --onefile main.py
