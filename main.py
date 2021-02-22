@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -6,13 +8,14 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time;
-import tkinter.ttk as ttk;
+import time
+import tkinter.ttk as ttk
 from tkinter import filedialog
-import os;
-import hashlib;
-import tkinter as tk;
+import os
+import hashlib
+import tkinter as tk
 import threading
+
 
 message_dic = {}
 user = os.environ["USERNAME"]
@@ -192,11 +195,17 @@ def readMessages(name, driver):
     f.close()
     output_label_2.configure(text="generazione del doppio hash della chat in corso...")
     window.update()
-    hashing(pyExePath + '/Scraped/Chat/' + name, '.csv')  # Creazione del doppio hash del file contenente le chat
+    hashing(pyExePath + '\\Scraped\\Chat\\' + name, '.csv')  # Creazione del doppio hash del file contenente le chat
     return
 
 
 def hashing(name, extension):
+    from datetime import datetime
+    from time import gmtime, strftime
+    now = datetime.now()
+    today = date.today().strftime("%d/%m/%Y")
+    current_time = now.strftime("%H:%M:%S")
+    timezone = strftime("GMT%z", gmtime())
     hash_md5 = hashlib.md5()
     has_sha512 = hashlib.sha512()
     with open(name + extension, "rb") as f:
@@ -207,18 +216,18 @@ def hashing(name, extension):
         for chunk in iter(lambda: f.read(4096), b""):
             has_sha512.update(chunk)
     sha512_digest = has_sha512.hexdigest()
-    f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
-    f_hash.write(name + extension + "," + md5Digest+',')
-    f_hash.write(name + extension + "," + sha512_digest)
-    f_hash.write('\n')
+    dir = pyExePath + '\\Scraped\\Hash\\'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+        f_hash = open(dir + 'hashing.csv','w', encoding='utf-8')
+        f_hash.write("Nome file,timestamp,md5,sha512")
+        f_hash.flush();f_hash.close()
+    f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
+    f_hash.write('\n'+name+extension+","+today+' '+current_time+' '+timezone+','+md5Digest+","+sha512_digest)
+    f_hash.flush(); f_hash.close()
     return
 
 def getChatLabels():
-    dir = pyExePath + '/Scraped/Hash/'
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
-    f_hash.write('Nome chat,timestamp,md5,sha')
     output_label_2.configure(text="apertura di WhatsApp Web in corso...")
     tree.delete(*tree.get_children())
     driver = openChrome()
@@ -569,7 +578,6 @@ if __name__ == '__main__':
     # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
 
     #TODO:
-    # 2) intestazione hashing + log: NomeChat_timestamp_md5_sha512 con fuso
     # 3) commentare codice + alleggerire codice (pulizia)
     # 4) aggiungere pulsante per scegliere cartella Scraped
     # 6) salvare log in hashing.csv (a fine scraping)
@@ -578,6 +586,8 @@ if __name__ == '__main__':
 
     #DONE:
     # 1) hashing.csv
-    # 7) creare esempio contatto.csv
+    # 2) intestazione hashing + log: NomeChat_timestamp_md5_sha512 con fuso
     # 5) doppio hash: sha,md5 (uno dopo l'altro)
+    # 7) creare esempio contatto.csv
+
 
