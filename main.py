@@ -358,7 +358,7 @@ def saveMedia(name, driver):
                 info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
                 info.click()
             except:
-                output_label_2.configure(text="non riesco a cliccare su info")
+                output_label_2.configure(text="impossibile localizzare le info")
                 window.update()
 
     try:
@@ -370,7 +370,7 @@ def saveMedia(name, driver):
         saveImgVidAud(name, driver)
         saveDoc(name, driver)
     except:
-        output_label_2.configure(text="non riesco a cliccare su media")
+        output_label_2.configure(text="impossibile localizzare i media")
         window.update()
     return
 
