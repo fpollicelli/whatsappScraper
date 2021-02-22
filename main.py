@@ -63,10 +63,10 @@ def openChrome():
     options.add_argument("--remote-debugging-port=9222")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     # CREAZIONE PROFILO SOLO PER DEBUG
-    '''
+    #'''
     options.add_argument(
         "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-     '''
+    #'''
     args = ["hide_console", ]
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
 
@@ -198,22 +198,27 @@ def readMessages(name, driver):
 
 def hashing(name, extension):
     hash_md5 = hashlib.md5()
-    sha512 = hashlib.sha512()
+    has_sha512 = hashlib.sha512()
     with open(name + extension, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     md5Digest = hash_md5.hexdigest()
-    sha512.update(md5Digest.encode('utf-8'))
-    sha512_digest = sha512.hexdigest()
-    dir = pyExePath + '/Scraped/Hash/'
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-    f_hash = open(dir + 'hashing.txt', 'a', encoding='utf-8')
+    with open(name + extension, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            has_sha512.update(chunk)
+    sha512_digest = has_sha512.hexdigest()
+    f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
+    f_hash.write(name + extension + "," + md5Digest+',')
     f_hash.write(name + extension + "," + sha512_digest)
     f_hash.write('\n')
     return
 
 def getChatLabels():
+    dir = pyExePath + '/Scraped/Hash/'
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+    f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
+    f_hash.write('Nome chat,timestamp,md5,sha')
     output_label_2.configure(text="apertura di WhatsApp Web in corso...")
     tree.delete(*tree.get_children())
     driver = openChrome()
@@ -316,25 +321,24 @@ def iterChatList(chatLabels, driver):
     for chat in chatLabels:
         chat.click()
         try:
-            element = WebDriverWait(driver, 20).until(
+            element = WebDriverWait(driver, 40).until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="main"]/header/div[2]/div[1]/div/span'))
             )
             label = chat.find_elements_by_xpath('//*[@id="main"]/header/div[2]/div[1]/div/span')
-        except:
-            output_label_2.configure(text="Impossibile caricare le chat")
-            window.update()
-
-        chatName = label[0].get_attribute('title')
-        if len(chatName) == 0:
-            label = chat.find_elements_by_xpath(
-                '//*[@id="main"]/header/div[2]/div[1]/div/span/span')  # se il nome contiene un'emoji, va nello span di sotto
             chatName = label[0].get_attribute('title')
-        readMessages(chatName, driver)
-        if (save_media.get() == 1):
-            saveMedia(chatName, driver)
-            output_label_2.configure(text="generazione del doppio hash dei media in corso...")
+            if len(chatName) == 0:
+                label = chat.find_elements_by_xpath(
+                    '//*[@id="main"]/header/div[2]/div[1]/div/span/span')  # se il nome contiene un'emoji, va nello span di sotto
+                chatName = label[0].get_attribute('title')
+            readMessages(chatName, driver)
+            if (save_media.get() == 1):
+                saveMedia(chatName, driver)
+                output_label_2.configure(text="generazione del doppio hash dei media in corso...")
+                window.update()
+                hashingMedia()
+        except:
+            output_label_2.configure(text="impossibile caricare le chat")
             window.update()
-            hashingMedia()
     return
 
 
@@ -563,3 +567,17 @@ if __name__ == '__main__':
     # done: rimuovere profilo 1, commentare per renderlo più generale
     # done: rimuovere console da applicativo:
     # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
+
+    #TODO:
+    # 2) intestazione hashing + log: NomeChat_timestamp_md5_sha512 con fuso
+    # 3) commentare codice + alleggerire codice (pulizia)
+    # 4) aggiungere pulsante per scegliere cartella Scraped
+    # 6) salvare log in hashing.csv (a fine scraping)
+    # 8) opzionale: scraper dal messaggio più recente (per non attendere)
+    # 8) opzionale: test sonar
+
+    #DONE:
+    # 1) hashing.csv
+    # 7) creare esempio contatto.csv
+    # 5) doppio hash: sha,md5 (uno dopo l'altro)
+
