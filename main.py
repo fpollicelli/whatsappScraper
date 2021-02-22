@@ -268,6 +268,9 @@ def getChatLabels():
         choose_label.configure(text="")
         window.update()
         driver.close()
+        path = pyExePath + '/Scraped'
+        path = os.path.realpath(path)
+        os.startfile(path)
         return
 
     if (archiviate.get() == 1):
