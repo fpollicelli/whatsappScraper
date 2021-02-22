@@ -387,11 +387,11 @@ def saveDoc(name, driver):
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        element = WebDriverWait(driver, 5).until(
+        element = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH,
                                         "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
         )
-        doc_list = driver.find_element_by_xpath(
+        doc_list = driver.find_elements_by_xpath(
             "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         for document in doc_list:
             document.click()
@@ -408,7 +408,7 @@ def saveImgVidAud(name, driver):
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        element = WebDriverWait(driver, 5).until(
+        element = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.XPATH, "//div[contains(@style,'background-image')]"))
         )
         image = driver.find_element_by_xpath("//div[contains(@style,'background-image')]")
