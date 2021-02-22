@@ -288,6 +288,7 @@ def getChatLabels():
         window.update()
         archiviaChat(chatLabelsDeArch, driver)
     output_label_2.configure(text="scraping terminato con successo!")
+    archiviate.set(0)
     choose_label.configure(text="")
     window.update()
     driver.close()
