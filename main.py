@@ -560,4 +560,4 @@ if __name__ == '__main__':
     window.mainloop()
     # done: rimuovere profilo 1, commentare per renderlo più generale
     # done: rimuovere console da applicativo:
-    # pyinstaller --noconsole --onefile main.py
+    # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
