@@ -1,5 +1,5 @@
 from datetime import datetime, date
-
+from time import gmtime, strftime
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -16,8 +16,6 @@ import hashlib
 import tkinter as tk
 import threading
 
-
-message_dic = {}
 user = os.environ["USERNAME"]
 window = tk.Tk()
 window.geometry("900x610")
@@ -26,6 +24,8 @@ window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
+log_dict = {}
+LOG = []
 
 tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente", "Messaggio"), height=18)
 tree.heading('Data', text="Data", anchor=tk.W)
@@ -80,16 +80,24 @@ def openChrome():
             EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/header/div[1]/div/img'))
         )
     except:
-        output_label_2.configure(text='impossibile connettersi a WhatsApp Web')
+        text ='impossibile connettersi a WhatsApp Web'
+        output_label_2.configure(text=text)
+        log_dict[getDateTime()] = text
         window.update()
+        f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
+        for key, value in log_dict.items():
+            f_hash.write('\n'+value+','+key+',,')
+        f_hash.flush();
+        f_hash.close()
         driver.close()
     return driver
 
 
 def readMessages(name, driver):
-    output_label_2.configure(text="scraping dei messaggi in corso...")
+    text="scraping dei messaggi in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     window.update()
-    message_dic[name] = []
     dir = pyExePath + '/Scraped/Chat/'
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -103,82 +111,60 @@ def readMessages(name, driver):
         except:
             driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
             trovato = False
-
-    messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
-    for messages in messageContainer:
-        if (save_media.get() == 1):
-            output_label_2.configure(text="salvataggio degli audio in corso...")
-            window.update()
-            try:
-                vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
-                vocal.click()
-                try:
-                    time.sleep(5)
-                    down = messages.find_element_by_xpath(".//span[contains(@data-testid,'audio-download')]")
-                    down.click()
-                    time.sleep(5)
+            messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
+            for messages in messageContainer:
+                if (save_media.get() == 1):
+                    text = "salvataggio degli audio in corso..."
+                    output_label_2.configure(text=text)
+                    log_dict[getDateTime()] = text
+                    window.update()
                     try:
-                        element = WebDriverWait(driver, 50).until(
-                            EC.presence_of_element_located((By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
-                        )
+                        vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
+                        vocal.click()
+                        try:
+                            time.sleep(5)
+                            down = messages.find_element_by_xpath(".//span[contains(@data-testid,'audio-download')]")
+                            down.click()
+                            time.sleep(5)
+                            try:
+                                element = WebDriverWait(driver, 50).until(
+                                    EC.presence_of_element_located(
+                                        (By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
+                                )
+                            except:
+                                text = "Impossibile scaricare l'audio"
+                                output_label_2.configure(text=text)
+                                log_dict[getDateTime()] = text
+                                window.update()
+                        except:
+                            pass
+                        downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
+                        downContext.click()
+                        button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
+                            (By.XPATH, ".//div[contains(@title,'Scarica')]")))
+                        button.click()
                     except:
-                        output_label_2.configure(text="Impossibile scaricare l'audio")
-                        window.update()
-                except:
-                    pass
-                downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
-                downContext.click()
-                button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                    (By.XPATH, ".//div[contains(@title,'Scarica')]")))
-                button.click()
-            except:
-                pass
-        try:
-            message = messages.find_element_by_xpath(
-                ".//span[contains(@class,'selectable-text copyable-text')]"
-            ).text
-            emojis = messages.find_elements_by_xpath(
-                ".//img[contains(@class,'selectable-text copyable-text')]")
+                        pass
+                try:
+                    message = messages.find_element_by_xpath(
+                        ".//span[contains(@class,'selectable-text copyable-text')]"
+                    ).text
+                    emojis = messages.find_elements_by_xpath(
+                        ".//img[contains(@class,'selectable-text copyable-text')]")
 
-            if len(emojis) != 0:
-                for emoji in emojis:
-                    message = message + emoji.get_attribute("data-plain-text")
-            info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
-            info = info.get_attribute("data-pre-plain-text")
-            oraData = info[info.find('[') + 1: info.find(']') + 1]
-            ora = oraData[oraData.find('[') + 1: oraData.find(',')]
-            data = oraData[oraData.find(' ') + 1: oraData.find(']')]
-            mittente = info.split(']')[1].strip()
-            mittente = mittente.split(':')[0].strip()
-
-            message = message.replace("\n", " ")
-
-            if len(message) > 90:
-                trimMessage = message[:90]
-                tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
-            else:
-                tree.insert("", 0, values=(data, ora, mittente, message))
-            finalMessage = data + "," + ora + "," + mittente + "," + message
-
-            window.update()
-            f.write(finalMessage)
-            f.write('\n')
-            message_dic[name].append(finalMessage)
-
-        except NoSuchElementException:  # solo emoji nel messaggio
-            try:
-                for emoji in messages.find_elements_by_xpath(
-                        ".//img[contains(@class,'selectable-text copyable-text')]"):
+                    if len(emojis) != 0:
+                        for emoji in emojis:
+                            message = message + emoji.get_attribute("data-plain-text")
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
-                    message = emoji.get_attribute("data-plain-text")
-
                     oraData = info[info.find('[') + 1: info.find(']') + 1]
                     ora = oraData[oraData.find('[') + 1: oraData.find(',')]
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
+
                     message = message.replace("\n", " ")
+
                     if len(message) > 90:
                         trimMessage = message[:90]
                         tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
@@ -189,23 +175,53 @@ def readMessages(name, driver):
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
-                    message_dic[name].append(finalMessage)
-            except NoSuchElementException:
-                pass
+
+                except NoSuchElementException:  # solo emoji nel messaggio
+                    try:
+                        for emoji in messages.find_elements_by_xpath(
+                                ".//img[contains(@class,'selectable-text copyable-text')]"):
+                            info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                            info = info.get_attribute("data-pre-plain-text")
+                            message = emoji.get_attribute("data-plain-text")
+
+                            oraData = info[info.find('[') + 1: info.find(']') + 1]
+                            ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                            data = oraData[oraData.find(' ') + 1: oraData.find(']')]
+                            mittente = info.split(']')[1].strip()
+                            mittente = mittente.split(':')[0].strip()
+                            message = message.replace("\n", " ")
+                            if len(message) > 90:
+                                trimMessage = message[:90]
+                                tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
+                            else:
+                                tree.insert("", 0, values=(data, ora, mittente, message))
+                            finalMessage = data + "," + ora + "," + mittente + "," + message
+
+                            window.update()
+                            f.write(finalMessage)
+                            f.write('\n')
+                    except NoSuchElementException:
+                        pass
+
+
     f.close()
-    output_label_2.configure(text="generazione del doppio hash della chat in corso...")
+    text="generazione del doppio hash della chat in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     window.update()
     hashing(pyExePath + '\\Scraped\\Chat\\' + name, '.csv')  # Creazione del doppio hash del file contenente le chat
     return
 
-
-def hashing(name, extension):
-    from datetime import datetime
-    from time import gmtime, strftime
+def getDateTime():
     now = datetime.now()
     today = date.today().strftime("%d/%m/%Y")
     current_time = now.strftime("%H:%M:%S")
     timezone = strftime("GMT%z", gmtime())
+    dateTime = today + ' ' + current_time + ' ' + timezone
+    return dateTime
+
+def hashing(name, extension):
+    dateTime = getDateTime()
     hash_md5 = hashlib.md5()
     has_sha512 = hashlib.sha512()
     with open(name + extension, "rb") as f:
@@ -223,12 +239,14 @@ def hashing(name, extension):
         f_hash.write("Nome file,timestamp,md5,sha512")
         f_hash.flush();f_hash.close()
     f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
-    f_hash.write('\n'+name+extension+","+today+' '+current_time+' '+timezone+','+md5Digest+","+sha512_digest)
+    f_hash.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
     f_hash.flush(); f_hash.close()
     return
 
 def getChatLabels():
-    output_label_2.configure(text="apertura di WhatsApp Web in corso...")
+    text="apertura di WhatsApp Web in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
@@ -263,7 +281,9 @@ def getChatLabels():
                     toArch.append(NAMES[i])
                     archiviat = 1
                 except:
-                    output_label_2.configure(text="errore: contatto non trovato")
+                    text="errore: contatto non trovato"
+                    output_label_2.configure(text=text)
+                    log_dict[getDateTime()] = text
 
             goBack = driver.find_element_by_xpath(
                 '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/header/div/div[1]/button/span')
@@ -275,12 +295,21 @@ def getChatLabels():
             pass
         iterChatList(chatLabels, driver)
         if archiviat == 1:
-            output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+            text="spostamento delle chat de-archiviate in archivio in corso..."
+            output_label_2.configure(text=text)
+            log_dict[getDateTime()] = text
             window.update()
             archiviaChat(toArch, driver)
-        output_label_2.configure(text="scraping terminato con successo.")
+        text="scraping terminato con successo"
+        output_label_2.configure(text=text)
+        log_dict[getDateTime()] = text
         choose_label.configure(text="")
         window.update()
+        f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
+        for key, value in log_dict.items():
+            f_hash.write('\n'+value+','+key+',,')
+        f_hash.flush()
+        f_hash.close()
         driver.close()
         path = pyExePath + '/Scraped'
         path = os.path.realpath(path)
@@ -289,7 +318,9 @@ def getChatLabels():
         return
 
     if (archiviate.get() == 1):
-        output_label_2.configure(text="spostamento delle chat archiviate in generali in corso...")
+        text="spostamento delle chat archiviate in generali in corso..."
+        output_label_2.configure(text=text)
+        log_dict[getDateTime()] = text
         window.update()
         chatLabelsDeArch = moveArchiviate(driver)
 
@@ -299,12 +330,22 @@ def getChatLabels():
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
     if (archiviate.get() == 1):
-        output_label_2.configure(text="spostamento delle chat de-archiviate in archivio in corso...")
+        text="spostamento delle chat de-archiviate in archivio in corso..."
+        output_label_2.configure(text=text)
+        log_dict[getDateTime()] = text
         window.update()
         archiviaChat(chatLabelsDeArch, driver)
-    output_label_2.configure(text="scraping terminato con successo!")
+    text="scraping terminato con successo"
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     choose_label.configure(text="")
     window.update()
+    dir = pyExePath + '\\Scraped\\Hash\\'
+    f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
+    for key, value in log_dict.items():
+        f_hash.write('\n'+value+','+key+',,')
+    f_hash.flush()
+    f_hash.close()
     driver.close()
     path = pyExePath + '/Scraped'
     path = os.path.realpath(path)
@@ -325,7 +366,9 @@ def archiviaChat(chatLabelsDeArch, driver):
 
 
 def iterChatList(chatLabels, driver):
-    output_label_2.configure(text="caricamento delle chat in corso...")
+    text="caricamento delle chat in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     window.update()
     for chat in chatLabels:
         chat.click()
@@ -342,11 +385,15 @@ def iterChatList(chatLabels, driver):
             readMessages(chatName, driver)
             if (save_media.get() == 1):
                 saveMedia(chatName, driver)
-                output_label_2.configure(text="generazione del doppio hash dei media in corso...")
+                text="generazione del doppio hash dei media in corso..."
+                output_label_2.configure(text=text)
+                log_dict[getDateTime()] = text
                 window.update()
                 hashingMedia()
         except:
-            output_label_2.configure(text="impossibile caricare le chat")
+            text="impossibile caricare le chat"
+            output_label_2.configure(text=text)
+            log_dict[getDateTime()] = text
             window.update()
     return
 
@@ -376,7 +423,9 @@ def saveMedia(name, driver):
                 info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
                 info.click()
             except:
-                output_label_2.configure(text="impossibile localizzare le info")
+                text="impossibile localizzare le info"
+                output_label_2.configure(text=text)
+                log_dict[getDateTime()] = text
                 window.update()
 
     try:
@@ -388,13 +437,17 @@ def saveMedia(name, driver):
         saveImgVidAud(name, driver)
         saveDoc(name, driver)
     except:
-        output_label_2.configure(text="impossibile localizzare i media")
+        text="impossibile localizzare i media"
+        output_label_2.configure(text=text)
+        log_dict[getDateTime()] = text
         window.update()
     return
 
 
 def saveDoc(name, driver):
-    output_label_2.configure(text="salvataggio dei documenti in corso...")
+    text="salvataggio dei documenti in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     window.update()
     time.sleep(3)
     docs_xpath = '//button[text()="Documenti"]'
@@ -419,7 +472,9 @@ def saveDoc(name, driver):
 
 
 def saveImgVidAud(name, driver):
-    output_label_2.configure(text="apertura dei media in corso...")
+    text="apertura dei media in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     window.update()
     dir = pyExePath + '/Scraped/Media/'
     noMedia = False
@@ -473,7 +528,9 @@ def get_file_content_chrome(driver, uri):
 
 
 def getChatFromCSV():
-    output_label_2.configure(text="ricerca delle chat selezionate in corso...")
+    text="ricerca delle chat selezionate in corso..."
+    output_label_2.configure(text=text)
+    log_dict[getDateTime()] = text
     tree.delete(*tree.get_children())
     filename = filedialog.askopenfilename(initialdir="/", title="Seleziona un file",
                                           filetypes=(("CSV files", "*.csv*"), ("all files", "*.*")))
@@ -578,16 +635,15 @@ if __name__ == '__main__':
     # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
 
     #TODO:
-    # 3) commentare codice + alleggerire codice (pulizia)
-    # 4) aggiungere pulsante per scegliere cartella Scraped
-    # 6) salvare log in hashing.csv (a fine scraping)
+    # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
+    # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
     # 8) opzionale: scraper dal messaggio più recente (per non attendere)
-    # 8) opzionale: test sonar
 
     #DONE:
     # 1) hashing.csv
     # 2) intestazione hashing + log: NomeChat_timestamp_md5_sha512 con fuso
-    # 5) doppio hash: sha,md5 (uno dopo l'altro)
+    # 5) doppio hash: sha,md5
+    # 6) salvare log in hashing.csv (a fine scraping)
     # 7) creare esempio contatto.csv
 
 
