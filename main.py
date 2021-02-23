@@ -701,24 +701,45 @@ def hashingMedia():
 
 def disableEvent(event):
     return "break"
-interfaceLang = 'italian'
-if interfaceLang == 'italian':
-    text = ['Data','Ora','Mittente','Messaggio','scraper pronto',
+
+it = ['Data','Ora','Mittente','Messaggio','scraper pronto',
             'Autori: Domenico Palmisano e Francesca Pollicelli','Opzioni',
             'Caricare lista contatti','Avvia scraper','Scraping chat archiviate']
-else:
-    text = ['Date','Time','Sender','Message','scraper ready',
+en = ['Date','Time','Sender','Message','scraper ready',
             'Authors: Domenico Palmisano and Francesca Pollicelli','Options',
             'Load contact list','Start scraper','Scraping archived chats']
 
-def change_language(lang):
+def change_language(index, value, op):
+    if comboLang.get() == 'English':
+        tree.heading(0, text=en[0], anchor=tk.W)
+        tree.heading(1, text=en[1], anchor=tk.W)
+        tree.heading(2, text=en[2], anchor=tk.W)
+        tree.heading(3, text=en[3], anchor=tk.W)
+        output_label_2.config(text=en[4])
+        credit_label.config(text=en[5])
+        label.config(text=en[6])
+        choose_1.config(text=en[7])
+        choose_2.config(text=en[8])
+        c2.config(text=en[9])
+
+    else:
+        tree.heading(0, text=it[0], anchor=tk.W)
+        tree.heading(1, text=it[1], anchor=tk.W)
+        tree.heading(2, text=it[2], anchor=tk.W)
+        tree.heading(3, text=it[3], anchor=tk.W)
+        output_label_2.config(text=it[4])
+        credit_label.config(text=it[5])
+        label.config(text=it[6])
+        choose_1.config(text=it[7])
+        choose_2.config(text=it[8])
+        c2.config(text=it[9])
     return
 
-tree = ttk.Treeview(window, show="headings", columns=(text[0],text[1], text[2], text[3]), height=18)
-tree.heading(text[0], text=text[0], anchor=tk.W)
-tree.heading(text[1], text=text[1], anchor=tk.W)
-tree.heading(text[2], text=text[2], anchor=tk.W)
-tree.heading(text[3], text=text[3], anchor=tk.W)
+tree = ttk.Treeview(window, show="headings", columns=(it[0],it[1], it[2], it[3]), height=18)
+tree.heading(it[0], text=it[0], anchor=tk.W)
+tree.heading(it[1], text=it[1], anchor=tk.W)
+tree.heading(it[2], text=it[2], anchor=tk.W)
+tree.heading(it[3], text=it[3], anchor=tk.W)
 tree.column('#1', minwidth=80, stretch=False, width=80)
 tree.column('#2', minwidth=60, stretch=False, width=60)
 tree.column('#3', minwidth=170, stretch=False, width=170)
@@ -738,38 +759,30 @@ tree.bind("<Button-1>", disableEvent)
 title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
-comboLang = ttk.Combobox(window, state="readonly",
-                            values=[
-                                    "English",
-                                    "Italian"])
-comboLang.current(1)
-comboLang.grid(row=0, column=0, sticky="W", padx=10, pady=10)
-comboLang.bind("<<ComboboxSelected>>", change_language)
-
-
 output_label = tk.Label(text="Log: ")
 output_label.grid(row=6, column=0, sticky="W", padx=10, pady=10)
 
-output_label_2 = tk.Label(text=text[4], bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
+output_label_2 = tk.Label(text=it[4], bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
 output_label_2.configure(width=50)
 output_label_2.grid(row=6, column=0, sticky="W", padx=45, pady=10)
 
-credit_label = tk.Label(window, text=text[5])
+credit_label = tk.Label(window, text=it[5])
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
 xf = tk.Frame(window, relief=tk.GROOVE, borderwidth=2, width=780, height=70)
 xf.grid(row=1, column=0, sticky="W", padx=10, pady=10)
 
-tk.Label(xf, text=text[6]).place(relx=.06, rely=0.04, anchor=tk.W)
+label = tk.Label(xf, text=it[6])
+label.place(relx=.06, rely=0.04, anchor=tk.W)
 
-choose_1 = tk.Button(text=text[7], command=lambda: threading.Thread(target=getChatFromCSV).start())
+choose_1 = tk.Button(text=it[7], command=lambda: threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=1, column=0, sticky="W", padx=30, pady=10)
 
 choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
 choose_label.configure(width=33)
 choose_label.grid(row=1, column=0, sticky="W", padx=180, pady=10)
 
-choose_2 = tk.Button(text=text[8], command=lambda: threading.Thread(target=getChatLabels).start())
+choose_2 = tk.Button(text=it[8], command=lambda: threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
 
 save_media = tk.IntVar()
@@ -777,9 +790,17 @@ c1 = tk.Checkbutton(window, text='Scraping media', variable=save_media, onvalue=
 c1.grid(row=1, column=0, stick="E", padx=320, pady=10)
 
 archiviate = tk.IntVar()
-c2 = tk.Checkbutton(window, text=text[9], variable=archiviate, onvalue=1, offvalue=0)
+c2 = tk.Checkbutton(window, text=it[9], variable=archiviate, onvalue=1, offvalue=0)
 c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 
+v = tk.StringVar()
+v.trace('w',change_language)
+comboLang = ttk.Combobox(window,textvar=v, state="readonly",
+                            values=[
+                                    "English",
+                                    "Italian"])
+comboLang.grid(row=0, column=0, sticky="W", padx=10, pady=10)
+comboLang.set('Italian')
 if __name__ == '__main__':
     window.mainloop()
     # done: rimuovere profilo 1, commentare per renderlo più generale
