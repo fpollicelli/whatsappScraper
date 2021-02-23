@@ -25,27 +25,6 @@ window.resizable(False, False)
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 log_dict = {}
-LOG = []
-
-tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente", "Messaggio"), height=18)
-tree.heading('Data', text="Data", anchor=tk.W)
-tree.heading('Ora', text="Ora", anchor=tk.W)
-tree.heading('Mittente', text="Mittente", anchor=tk.W)
-tree.heading('Messaggio', text="Messaggio", anchor=tk.W)
-tree.column('#1', minwidth=80, stretch=False, width=80)
-tree.column('#2', minwidth=60, stretch=False, width=60)
-tree.column('#3', minwidth=170, stretch=False, width=170)
-tree.column('#4', minwidth=565, stretch=True, width=565)
-style = ttk.Style(window)
-tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
-
-vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
-vsbar.place(x=868, y=189, height=360, width=20)
-tree.configure(yscrollcommand=vsbar.set)
-
-style.theme_use("clam")
-style.configure("Treeview", background="white",
-                fieldbackground="white", foreground="white")
 
 
 def findChromeDriver():
@@ -577,7 +556,6 @@ def moveArchiviate(driver):
     goBack.click()
     return chatNames
 
-
 def hashingMedia():
     directory = pyExePath + '/Scraped/Media/'
     for filename in os.listdir(directory):
@@ -585,11 +563,28 @@ def hashingMedia():
         hashing(directory + file[0], file[1])
     return
 
-
 def disableEvent(event):
     return "break"
 
+tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente", "Messaggio"), height=18)
+tree.heading('Data', text="Data", anchor=tk.W)
+tree.heading('Ora', text="Ora", anchor=tk.W)
+tree.heading('Mittente', text="Mittente", anchor=tk.W)
+tree.heading('Messaggio', text="Messaggio", anchor=tk.W)
+tree.column('#1', minwidth=80, stretch=False, width=80)
+tree.column('#2', minwidth=60, stretch=False, width=60)
+tree.column('#3', minwidth=170, stretch=False, width=170)
+tree.column('#4', minwidth=565, stretch=True, width=565)
+style = ttk.Style(window)
+tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 
+vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
+vsbar.place(x=868, y=189, height=360, width=20)
+tree.configure(yscrollcommand=vsbar.set)
+
+style.theme_use("clam")
+style.configure("Treeview", background="white",
+                fieldbackground="white", foreground="white")
 tree.bind("<Button-1>", disableEvent)
 
 title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
@@ -631,13 +626,12 @@ c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 if __name__ == '__main__':
     window.mainloop()
     # done: rimuovere profilo 1, commentare per renderlo più generale
-    # done: rimuovere console da applicativo:
     # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
 
     #TODO:
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
     # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
-    # 8) opzionale: scraper dal messaggio più recente (per non attendere)
+
 
     #DONE:
     # 1) hashing.csv
@@ -645,5 +639,7 @@ if __name__ == '__main__':
     # 5) doppio hash: sha,md5
     # 6) salvare log in hashing.csv (a fine scraping)
     # 7) creare esempio contatto.csv
+    # 8) opzionale: scraper dal messaggio più recente (per non attendere)
+        #NOTA: rimettere in ordine i messaggi nei csv?
 
 
