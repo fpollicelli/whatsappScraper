@@ -22,13 +22,29 @@ window.geometry("900x610")
 window.title("WhatsApp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
+chromeDriverPath = os.path.dirname(os.path.abspath(__file__))
 pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 log_dict = {}
+language = 'italian'
 
+def detectLanguage(driver):
+    global language
+    try:
+        element = WebDriverWait(driver, 50).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div/div[4]/div/div/div[2]/h1'))
+        )
+        welcome = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[4]/div/div/div[2]/h1')
+        welcome = welcome.get_attribute("innerHTML")
+        if welcome == 'Keep your phone connected':
+            language = 'english'
+        else:language = 'italian'
+    except:
+        language = 'italian'
+    return
 
 def findChromeDriver():
-    for root, dirs, files in os.walk(pyExePath):
+    for root, dirs, files in os.walk(chromeDriverPath):
         if "chromedriver.exe" in files:
             return os.path.join(root, "chromedriver.exe")
 
@@ -59,7 +75,9 @@ def openChrome():
             EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/header/div[1]/div/img'))
         )
     except:
-        text ='impossibile connettersi a WhatsApp Web'
+        if language == 'italian':
+            text ='impossibile connettersi a WhatsApp Web'
+        else: text ='unable to connect to WhatsApp Web'
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
@@ -73,7 +91,10 @@ def openChrome():
 
 
 def readMessages(name, driver):
-    text="scraping dei messaggi in corso..."
+    if language == 'italian':
+        text="scraping dei messaggi in corso..."
+    else:
+        text = 'scraping messages in progress'
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
@@ -81,7 +102,10 @@ def readMessages(name, driver):
     if not os.path.exists(dir):
         os.makedirs(dir)
     f = open(dir + name + '.csv', 'w', encoding='utf-8')
-    f.write('Data,Ora,Mittente,Messaggio\n')
+    if language == 'italian':
+        f.write('Data,Ora,Mittente,Messaggio\n')
+    else:
+        f.write('Date,Time,Sender,Message\n')
     trovato = False
     while trovato == False:
         try:
@@ -93,7 +117,10 @@ def readMessages(name, driver):
             messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
             for messages in messageContainer:
                 if (save_media.get() == 1):
-                    text = "salvataggio degli audio in corso..."
+                    if language == 'italian':
+                        text = "salvataggio degli audio in corso..."
+                    else:
+                        text = 'scraping audio...'
                     output_label_2.configure(text=text)
                     log_dict[getDateTime()] = text
                     window.update()
@@ -111,7 +138,10 @@ def readMessages(name, driver):
                                         (By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
                                 )
                             except:
-                                text = "Impossibile scaricare l'audio"
+                                if language == 'italian':
+                                    text = "impossibile scaricare l'audio"
+                                else:
+                                    text = 'unable to download the audio'
                                 output_label_2.configure(text=text)
                                 log_dict[getDateTime()] = text
                                 window.update()
@@ -119,8 +149,12 @@ def readMessages(name, driver):
                             pass
                         downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
                         downContext.click()
-                        button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                            (By.XPATH, ".//div[contains(@title,'Scarica')]")))
+                        if language == 'italian':
+                            button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
+                                (By.XPATH, ".//div[contains(@title,'Scarica')]")))
+                        else:
+                            button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
+                                (By.XPATH, ".//div[contains(@title,'Download')]")))
                         button.click()
                     except:
                         pass
@@ -184,7 +218,10 @@ def readMessages(name, driver):
 
 
     f.close()
-    text="generazione del doppio hash della chat in corso..."
+    if language == 'italian':
+        text="generazione del doppio hash della chat in corso..."
+    else:
+        text = 'generating double hash...'
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
@@ -215,7 +252,11 @@ def hashing(name, extension):
     if not os.path.exists(dir):
         os.makedirs(dir)
         f_hash = open(dir + 'hashing.csv','w', encoding='utf-8')
-        f_hash.write("Nome file,timestamp,md5,sha512")
+        if language == 'italian':
+            f_hash.write("Nome file,timestamp,md5,sha512")
+        else:
+            f_hash.write("File name,timestamp,md5,sha512")
+
         f_hash.flush();f_hash.close()
     f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
     f_hash.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
@@ -223,7 +264,11 @@ def hashing(name, extension):
     return
 
 def getChatLabels():
-    text="apertura di WhatsApp Web in corso..."
+    if language == 'italian':
+        text="apertura di WhatsApp Web in corso..."
+    else:
+        text = 'opening WhatsApp Web...'
+
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     tree.delete(*tree.get_children())
@@ -231,7 +276,7 @@ def getChatLabels():
     chatLabels = []
     archiviat = 0
     toArch = []
-
+    detectLanguage(driver)
     if len(NAMES) != 0:
         for i in range(0, len(NAMES)):
             if 'str' in NAMES[i]:
@@ -260,7 +305,11 @@ def getChatLabels():
                     toArch.append(NAMES[i])
                     archiviat = 1
                 except:
-                    text="errore: contatto non trovato"
+                    if language == 'italian':
+                        text="errore: contatto non trovato"
+                    else:
+                        text = "error: can't find the contact"
+
                     output_label_2.configure(text=text)
                     log_dict[getDateTime()] = text
 
@@ -274,12 +323,19 @@ def getChatLabels():
             pass
         iterChatList(chatLabels, driver)
         if archiviat == 1:
-            text="spostamento delle chat de-archiviate in archivio in corso..."
+            if language == 'italian':
+                text = "spostamento delle chat de-archiviate in archivio in corso..."
+            else:
+                text = "moving de-archived chats to archive..."
             output_label_2.configure(text=text)
             log_dict[getDateTime()] = text
             window.update()
             archiviaChat(toArch, driver)
-        text="scraping terminato con successo"
+        if language == 'italian':
+            text="scraping terminato con successo"
+        else:
+            text = "scraping successfully completed"
+
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         choose_label.configure(text="")
@@ -297,7 +353,10 @@ def getChatLabels():
         return
 
     if (archiviate.get() == 1):
-        text="spostamento delle chat archiviate in generali in corso..."
+        if language == 'italian':
+            text="spostamento delle chat archiviate in generali in corso..."
+        else:
+            text = "moving archived chats in general..."
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
@@ -309,12 +368,18 @@ def getChatLabels():
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
     if (archiviate.get() == 1):
-        text="spostamento delle chat de-archiviate in archivio in corso..."
+        if language == 'italian':
+            text = "spostamento delle chat de-archiviate in archivio in corso..."
+        else:
+            text = "moving de-archived chats to archive..."
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
         archiviaChat(chatLabelsDeArch, driver)
-    text="scraping terminato con successo"
+    if language == 'italian':
+        text = "scraping terminato con successo"
+    else:
+        text = "scraping successfully completed"
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     choose_label.configure(text="")
@@ -345,7 +410,10 @@ def archiviaChat(chatLabelsDeArch, driver):
 
 
 def iterChatList(chatLabels, driver):
-    text="caricamento delle chat in corso..."
+    if language == 'italian':
+        text = "caricamento delle chat in corso..."
+    else:
+        text = "loading chats..."
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
@@ -364,13 +432,20 @@ def iterChatList(chatLabels, driver):
             readMessages(chatName, driver)
             if (save_media.get() == 1):
                 saveMedia(chatName, driver)
-                text="generazione del doppio hash dei media in corso..."
+
+                if language == 'italian':
+                    text = "generazione del doppio hash della chat in corso..."
+                else:
+                    text = 'generating double hash...'
                 output_label_2.configure(text=text)
                 log_dict[getDateTime()] = text
                 window.update()
                 hashingMedia()
         except:
-            text="impossibile caricare le chat"
+            if language == 'italian':
+                text = "impossibile caricare le chat"
+            else:
+                text = 'failed loading chats'
             output_label_2.configure(text=text)
             log_dict[getDateTime()] = text
             window.update()
@@ -382,41 +457,75 @@ def saveMedia(name, driver):
     menu.click()
     info = driver.find_element_by_xpath('//*[@id="main"]')
     try:
-        element = WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
-        )
-        info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
-        info.click()
+        if language == 'italian':
+            element = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
+            )
+            info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
+            info.click()
+        else:
+            element = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Group info')]"))
+            )
+            info = driver.find_element_by_xpath("//div[contains(@title,'Group info')]")
+            info.click()
     except:
         try:
-            element = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
-            )
-            info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto')]")
-            info.click()
+            if language == 'italian':
+                element = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
+                )
+                info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto'')]")
+                info.click()
+            else:
+                element = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Contact info')]"))
+                )
+                info = driver.find_element_by_xpath("//div[contains(@title,'Contact info')]")
+                info.click()
         except:
             try:
-                element = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info lista broadcast')]"))
-                )
-                info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
-                info.click()
+                if language == 'italian':
+                    element = WebDriverWait(driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info lista broadcast')]"))
+                    )
+                    info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
+                    info.click()
+                else:
+                    element = WebDriverWait(driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Broadcast list info')]"))
+                    )
+                    info = driver.find_element_by_xpath("//div[contains(@title,'Broadcast list info')]")
+                    info.click()
             except:
-                text="impossibile localizzare le info"
+                if language == 'italian':
+                    text="impossibile localizzare le info"
+                else:
+                    text = "can't locate info"
                 output_label_2.configure(text=text)
                 log_dict[getDateTime()] = text
                 window.update()
 
     try:
-        element = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, "//span[text()='Media, link e documenti']"))
-        )
-        media = driver.find_element_by_xpath("//span[text()='Media, link e documenti']")
-        media.click()
+        if language == 'italian':
+            element = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.XPATH, "//span[text()='Media, link e documenti']"))
+            )
+            media = driver.find_element_by_xpath("//span[text()='Media, link e documenti']")
+            media.click()
+        else:
+            element = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Media, Links and Docs')]"))
+            )
+            media = driver.find_element_by_xpath("//div[contains(@title,'Media, Links and Docs')]")
+            media.click()
         saveImgVidAud(name, driver)
         saveDoc(name, driver)
     except:
-        text="impossibile localizzare i media"
+        if language == 'italian':
+            text="impossibile localizzare i media"
+        else:
+            text = "can't locate media"
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
@@ -424,12 +533,21 @@ def saveMedia(name, driver):
 
 
 def saveDoc(name, driver):
-    text="salvataggio dei documenti in corso..."
+    if language == 'italian':
+        text = "salvataggio dei documenti in corso..."
+    else:
+        text = "saving documents..."
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
     time.sleep(3)
-    docs_xpath = '//button[text()="Documenti"]'
+
+    if language == 'italian':
+        docs_xpath = '//button[text()="Documenti"]'
+    else:
+        docs_xpath = '//button[text()="DOCS"]'
+
+
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
     dir = pyExePath + '/Scraped/Media/'
@@ -451,7 +569,10 @@ def saveDoc(name, driver):
 
 
 def saveImgVidAud(name, driver):
-    text="apertura dei media in corso..."
+    if language == 'italian':
+        text="apertura dei media in corso..."
+    else:
+        text = "opening media..."
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
@@ -469,7 +590,11 @@ def saveImgVidAud(name, driver):
         driver.execute_script("arguments[0].click();", image)
         while (lastimg == 'false'):
             try:
-                downloadXpath = "//div[@title='Scarica']"
+                if language == 'italian':
+                    downloadXpath = "//div[@title='Scarica']"
+                else:
+                    downloadXpath = "//div[@title='Download']"
+
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
             except:
@@ -505,13 +630,24 @@ def get_file_content_chrome(driver, uri):
         raise Exception("Request failed with status %s" % result)
     return result
 
+def selectFolder():
+    global  pyExePath
+    pyExePath = filedialog.askdirectory()
+    return
 
 def getChatFromCSV():
-    text="ricerca delle chat selezionate in corso..."
+    if language == 'italian':
+        text = "ricerca delle chat selezionate in corso..."
+    else:
+        text = "searching for selected chats..."
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     tree.delete(*tree.get_children())
-    filename = filedialog.askopenfilename(initialdir="/", title="Seleziona un file",
+    if language == 'italian':
+        text = "Seleziona un file"
+    else:
+        text = "Select a file"
+    filename = filedialog.askopenfilename(initialdir="/", title=text,
                                           filetypes=(("CSV files", "*.csv*"), ("all files", "*.*")))
     nomeFile = os.path.basename(filename)
     if nomeFile != "":
@@ -566,11 +702,27 @@ def hashingMedia():
 def disableEvent(event):
     return "break"
 
-tree = ttk.Treeview(window, show="headings", columns=("Data", "Ora", "Mittente", "Messaggio"), height=18)
-tree.heading('Data', text="Data", anchor=tk.W)
-tree.heading('Ora', text="Ora", anchor=tk.W)
-tree.heading('Mittente', text="Mittente", anchor=tk.W)
-tree.heading('Messaggio', text="Messaggio", anchor=tk.W)
+if language == 'italian':
+    text = ['Data','Ora','Mittente','Messaggio','scraper pronto',
+            'Autori: Domenico Palmisano e Francesca Pollicelli','Opzioni',
+            'Caricare lista contatti','Avvia scraper','Scraping chat archiviate']
+else:
+    text = ['Date','Time','Sender','Message','scraper ready',
+            'Authors: Domenico Palmisano and Francesca Pollicelli','Options',
+            'Load contact list','Start scraper','Scraping archived chats']
+
+# def change_language(lang):
+#     if language == 'English':
+#         tree.config
+#     elif lang == 'Italian':
+#         root.title('Programa')
+#         menuButton.config(text='Menú')
+
+tree = ttk.Treeview(window, show="headings", columns=(text[0],text[1], text[2], text[3]), height=18)
+tree.heading(text[0], text=text[0], anchor=tk.W)
+tree.heading(text[1], text=text[1], anchor=tk.W)
+tree.heading(text[2], text=text[2], anchor=tk.W)
+tree.heading(text[3], text=text[3], anchor=tk.W)
 tree.column('#1', minwidth=80, stretch=False, width=80)
 tree.column('#2', minwidth=60, stretch=False, width=60)
 tree.column('#3', minwidth=170, stretch=False, width=170)
@@ -590,29 +742,34 @@ tree.bind("<Button-1>", disableEvent)
 title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
+ttk.Radiobutton(window, text='English', variable=language, value='english').grid(row=0,column=0,sticky="W", padx=10, pady=10)
+ttk.Radiobutton(window, text='Italiano', variable=language, value='italian').grid(row=0,column=0,sticky="W", padx=100, pady=10)
+
+
+
 output_label = tk.Label(text="Log: ")
 output_label.grid(row=6, column=0, sticky="W", padx=10, pady=10)
 
-output_label_2 = tk.Label(text="scraper pronto", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
+output_label_2 = tk.Label(text=text[4], bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
 output_label_2.configure(width=50)
 output_label_2.grid(row=6, column=0, sticky="W", padx=45, pady=10)
 
-credit_label = tk.Label(window, text="Autori: Domenico Palmisano e Francesca Pollicelli")
+credit_label = tk.Label(window, text=text[5])
 credit_label.grid(row=6, column=0, stick="E", padx=10, pady=0)
 
 xf = tk.Frame(window, relief=tk.GROOVE, borderwidth=2, width=780, height=70)
 xf.grid(row=1, column=0, sticky="W", padx=10, pady=10)
 
-tk.Label(xf, text='Opzioni').place(relx=.06, rely=0.04, anchor=tk.W)
+tk.Label(xf, text=text[6]).place(relx=.06, rely=0.04, anchor=tk.W)
 
-choose_1 = tk.Button(text="Caricare lista contatti", command=lambda: threading.Thread(target=getChatFromCSV).start())
+choose_1 = tk.Button(text=text[7], command=lambda: threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=1, column=0, sticky="W", padx=30, pady=10)
 
 choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
 choose_label.configure(width=33)
 choose_label.grid(row=1, column=0, sticky="W", padx=180, pady=10)
 
-choose_2 = tk.Button(text="Avvia scraper", command=lambda: threading.Thread(target=getChatLabels).start())
+choose_2 = tk.Button(text=text[8], command=lambda: threading.Thread(target=getChatLabels).start())
 choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
 
 save_media = tk.IntVar()
@@ -620,7 +777,7 @@ c1 = tk.Checkbutton(window, text='Scraping media', variable=save_media, onvalue=
 c1.grid(row=1, column=0, stick="E", padx=320, pady=10)
 
 archiviate = tk.IntVar()
-c2 = tk.Checkbutton(window, text='Scraping chat archiviate', variable=archiviate, onvalue=1, offvalue=0)
+c2 = tk.Checkbutton(window, text=text[9], variable=archiviate, onvalue=1, offvalue=0)
 c2.grid(row=1, column=0, stick="E", padx=135, pady=10)
 
 if __name__ == '__main__':
@@ -631,6 +788,7 @@ if __name__ == '__main__':
     #TODO:
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
     # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
+        #---> creato backend
 
 
     #DONE:
