@@ -701,8 +701,8 @@ def hashingMedia():
 
 def disableEvent(event):
     return "break"
-
-if language == 'italian':
+interfaceLang = 'italian'
+if interfaceLang == 'italian':
     text = ['Data','Ora','Mittente','Messaggio','scraper pronto',
             'Autori: Domenico Palmisano e Francesca Pollicelli','Opzioni',
             'Caricare lista contatti','Avvia scraper','Scraping chat archiviate']
@@ -711,12 +711,8 @@ else:
             'Authors: Domenico Palmisano and Francesca Pollicelli','Options',
             'Load contact list','Start scraper','Scraping archived chats']
 
-# def change_language(lang):
-#     if language == 'English':
-#         tree.config
-#     elif lang == 'Italian':
-#         root.title('Programa')
-#         menuButton.config(text='Menú')
+def change_language(lang):
+    return
 
 tree = ttk.Treeview(window, show="headings", columns=(text[0],text[1], text[2], text[3]), height=18)
 tree.heading(text[0], text=text[0], anchor=tk.W)
@@ -742,9 +738,13 @@ tree.bind("<Button-1>", disableEvent)
 title = tk.Label(window, text="WhatsApp Scraper", font=("Helvetica", 24))
 title.grid(row=0, column=0, sticky="N", padx=20, pady=10)
 
-ttk.Radiobutton(window, text='English', variable=language, value='english').grid(row=0,column=0,sticky="W", padx=10, pady=10)
-ttk.Radiobutton(window, text='Italiano', variable=language, value='italian').grid(row=0,column=0,sticky="W", padx=100, pady=10)
-
+comboLang = ttk.Combobox(window, state="readonly",
+                            values=[
+                                    "English",
+                                    "Italian"])
+comboLang.current(1)
+comboLang.grid(row=0, column=0, sticky="W", padx=10, pady=10)
+comboLang.bind("<<ComboboxSelected>>", change_language)
 
 
 output_label = tk.Label(text="Log: ")
