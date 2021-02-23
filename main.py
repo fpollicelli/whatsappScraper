@@ -171,8 +171,11 @@ def readMessages(name, driver):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
                     oraData = info[info.find('[') + 1: info.find(']') + 1]
+                    if language == 'english':
+                        data = oraData[oraData.find(' ') + 4: oraData.find(']')]
+                    else:
+                        data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     ora = oraData[oraData.find('[') + 1: oraData.find(',')]
-                    data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
 
@@ -189,7 +192,8 @@ def readMessages(name, driver):
                     f.write(finalMessage)
                     f.write('\n')
 
-                except NoSuchElementException:  # solo emoji nel messaggio
+                # only emojis in the message
+                except NoSuchElementException:
                     try:
                         for emoji in messages.find_elements_by_xpath(
                                 ".//img[contains(@class,'selectable-text copyable-text')]"):
@@ -215,8 +219,6 @@ def readMessages(name, driver):
                             f.write('\n')
                     except NoSuchElementException:
                         pass
-
-
     f.close()
     if language == 'italian':
         text="generazione del doppio hash della chat in corso..."
@@ -230,7 +232,10 @@ def readMessages(name, driver):
 
 def getDateTime():
     now = datetime.now()
-    today = date.today().strftime("%d/%m/%Y")
+    if language == 'english':
+        today = date.today().strftime("%m/%d/%Y")
+    else:
+        today = date.today().strftime("%d/%m/%Y")
     current_time = now.strftime("%H:%M:%S")
     timezone = strftime("GMT%z", gmtime())
     dateTime = today + ' ' + current_time + ' ' + timezone
