@@ -689,10 +689,10 @@ def disableEvent(event):
 
 it = ['Data','Ora','Mittente','Messaggio','scraper pronto',
             'Autori: Domenico Palmisano e Francesca Pollicelli','Opzioni',
-            'Caricare lista contatti','Avvia scraper','Scraping chat archiviate']
+            'Caricare lista contatti','Avvia scraper','Scraping chat archiviate','Cartella di destinazione']
 en = ['Date','Time','Sender','Message','scraper ready',
             'Authors: Domenico Palmisano and Francesca Pollicelli','Options',
-            'Load contact list','Start scraper','Scraping archived chats']
+            'Load contact list','Start scraper','Scraping archived chats','Destination folder']
 
 def change_language(index, value, op):
     if comboLang.get() == 'English':
@@ -706,6 +706,7 @@ def change_language(index, value, op):
         choose_1.config(text=en[7])
         choose_2.config(text=en[8])
         c2.config(text=en[9])
+        choose_dest.config(text=en[10])
 
     else:
         tree.heading(0, text=it[0], anchor=tk.W)
@@ -718,6 +719,7 @@ def change_language(index, value, op):
         choose_1.config(text=it[7])
         choose_2.config(text=it[8])
         c2.config(text=it[9])
+        choose_dest.config(text=it[10])
     return
 
 tree = ttk.Treeview(window, show="headings", columns=(it[0],it[1], it[2], it[3]), height=14)
@@ -771,7 +773,7 @@ choose_dest_label.configure(width=55)
 choose_dest_label.grid(row=2, column=0, sticky="W", padx=185, pady=10)
 
 
-choose_dest = tk.Button(text="Cartella di destinazione", command=lambda: threading.Thread(target=selectFolder).start())
+choose_dest = tk.Button(text=it[10], command=lambda: threading.Thread(target=selectFolder).start())
 choose_dest.grid(row=2, column=0, sticky="W", padx=30, pady=10)
 
 choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
