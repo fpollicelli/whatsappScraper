@@ -475,7 +475,7 @@ def saveMedia(name, driver):
                 element = WebDriverWait(driver, 5).until(
                     EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
                 )
-                info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto'')]")
+                info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto')]")
                 info.click()
             else:
                 element = WebDriverWait(driver, 5).until(
