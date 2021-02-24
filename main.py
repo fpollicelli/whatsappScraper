@@ -27,7 +27,7 @@ pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 log_dict = {}
 language = 'italian'
-window.iconbitmap('whatsapp.ico')
+#window.iconbitmap('whatsapp.ico')
 
 def detectLanguage(driver):
     global language
@@ -90,7 +90,6 @@ def openChrome():
         driver.close()
     return driver
 
-
 def readMessages(name, driver):
     if language == 'italian':
         text="scraping dei messaggi in corso..."
@@ -115,6 +114,8 @@ def readMessages(name, driver):
         except:
             trovato = False
             driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
+
+
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
     for messages in messageContainer:
         if (save_media.get() == 1):
@@ -179,10 +180,7 @@ def readMessages(name, driver):
             ora = oraData[oraData.find('[') + 1: oraData.find(',')]
             mittente = info.split(']')[1].strip()
             mittente = mittente.split(':')[0].strip()
-
             message = message.replace("\n", " ")
-            print(message)
-
             if len(message) > 90:
                 trimMessage = message[:90]
                 tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
