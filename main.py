@@ -18,7 +18,7 @@ import threading
 
 user = os.environ["USERNAME"]
 window = tk.Tk()
-window.geometry("900x610")
+window.geometry("900x700")
 window.title("WhatsApp Scraper")
 window.grid_columnconfigure(0, weight=1)
 window.resizable(False, False)
@@ -27,6 +27,7 @@ pyExePath = os.path.dirname(os.path.abspath(__file__))
 NAMES = []
 log_dict = {}
 language = 'italian'
+window.iconbitmap('whatsapp.ico')
 
 def detectLanguage(driver):
     global language
@@ -269,6 +270,7 @@ def hashing(name, extension):
     return
 
 def getChatLabels():
+
     if language == 'italian':
         text="apertura di WhatsApp Web in corso..."
     else:
@@ -638,6 +640,7 @@ def get_file_content_chrome(driver, uri):
 def selectFolder():
     global  pyExePath
     pyExePath = filedialog.askdirectory()
+    choose_dest_label.configure(text=pyExePath)
     return
 
 def getChatFromCSV():
@@ -753,7 +756,7 @@ style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 
 vsbar = tk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
-vsbar.place(x=868, y=189, height=360, width=20)
+vsbar.place(x=868, y=279, height=360, width=20)
 tree.configure(yscrollcommand=vsbar.set)
 
 style.theme_use("clam")
@@ -783,12 +786,23 @@ label.place(relx=.06, rely=0.04, anchor=tk.W)
 choose_1 = tk.Button(text=it[7], command=lambda: threading.Thread(target=getChatFromCSV).start())
 choose_1.grid(row=1, column=0, sticky="W", padx=30, pady=10)
 
+xf_2 = tk.Frame(window, relief=tk.GROOVE, borderwidth=2, width=780, height=70)
+xf_2.grid(row=2, column=0, sticky="W", padx=10, pady=10)
+
+choose_dest_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
+choose_dest_label.configure(width=33)
+choose_dest_label.grid(row=2, column=0, sticky="W", padx=180, pady=10)
+
+
+choose_dest = tk.Button(text="Cartella di destinazione", command=lambda: threading.Thread(target=selectFolder).start())
+choose_dest.grid(row=2, column=0, sticky="W", padx=30, pady=10)
+
 choose_label = tk.Label(text="", bg="white", fg="black", borderwidth=2, relief="groove", anchor='w')
 choose_label.configure(width=33)
 choose_label.grid(row=1, column=0, sticky="W", padx=180, pady=10)
 
 choose_2 = tk.Button(text=it[8], command=lambda: threading.Thread(target=getChatLabels).start())
-choose_2.grid(row=1, column=0, sticky="E", padx=10, pady=10)
+choose_2.grid(row=2, column=0, sticky="E", padx=130, pady=10)
 
 save_media = tk.IntVar()
 c1 = tk.Checkbutton(window, text='Scraping media', variable=save_media, onvalue=1, offvalue=0)
@@ -814,6 +828,7 @@ if __name__ == '__main__':
     #TODO:
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
     # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
+    # 5) sistemare visualizzazione del percorso della cartella di destinazione
         #---> creato backend
 
 
