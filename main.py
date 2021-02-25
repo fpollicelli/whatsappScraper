@@ -127,85 +127,102 @@ def readMessages(name, driver):
         f.write('Data,Ora,Mittente,Messaggio\n')
     else:
         f.write('Date,Time,Sender,Message\n')
-
     trovato = False
-    previous = []
     while trovato == False:
         try:
             element = driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div/div[2]/div[2]/div/div/div/span/span")
             trovato = True
         except:
             trovato = False
-            time.sleep(5)
-            readline = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
-            if len(previous) !=0:
-                readline = readline.extend(previous)
-                readline = unique(readline)
-            for messages in reversed(readline):
-                if (save_media.get() == 1):
-                    if language == 'italian':
-                        text = "salvataggio degli audio in corso..."
-                    else:
-                        text = 'scraping audio...'
-                    output_label_2.configure(text=text)
-                    log_dict[getDateTime()] = text
-                    window.update()
-                    try:
-                        vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
-                        vocal.click()
-                        try:
-                            time.sleep(5)
-                            down = messages.find_element_by_xpath(
-                                ".//span[contains(@data-testid,'audio-download')]")
-                            down.click()
-                            time.sleep(5)
-                            try:
-                                element = WebDriverWait(driver, 50).until(
-                                    EC.presence_of_element_located(
-                                        (By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
-                                )
-                            except:
-                                if language == 'italian':
-                                    text = "impossibile scaricare l'audio"
-                                else:
-                                    text = 'unable to download the audio'
-                                output_label_2.configure(text=text)
-                                log_dict[getDateTime()] = text
-                                window.update()
-                        except:
-                            pass
-                        downContext = messages.find_element_by_xpath(
-                            ".//span[contains(@data-testid,'down-context')]")
-                        downContext.click()
-                        if language == 'italian':
-                            button = WebDriverWait(driver, 30).until(
-                                expected_conditions.presence_of_element_located(
-                                    (By.XPATH, ".//div[contains(@title,'Scarica')]")))
-                        else:
-                            button = WebDriverWait(driver, 30).until(
-                                expected_conditions.presence_of_element_located(
-                                    (By.XPATH, ".//div[contains(@title,'Download')]")))
-                        button.click()
-                    except:
-                        pass
-                try:
-                    message = messages.find_element_by_xpath(
-                        ".//span[contains(@class,'selectable-text copyable-text')]"
-                    ).text
-                    emojis = messages.find_elements_by_xpath(
-                        ".//img[contains(@class,'selectable-text copyable-text')]")
+            driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
 
-                    if len(emojis) != 0:
-                        for emoji in emojis:
-                            message = message + emoji.get_attribute("data-plain-text")
+    messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
+    for messages in messageContainer:
+        if (save_media.get() == 1):
+            if language == 'italian':
+                text = "salvataggio degli audio in corso..."
+            else:
+                text = 'scraping audio...'
+            output_label_2.configure(text=text)
+            log_dict[getDateTime()] = text
+            window.update()
+            try:
+                vocal = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
+                vocal.click()
+                try:
+                    time.sleep(5)
+                    down = messages.find_element_by_xpath(".//span[contains(@data-testid,'audio-download')]")
+                    down.click()
+                    time.sleep(5)
+                    try:
+                        element = WebDriverWait(driver, 50).until(
+                            EC.presence_of_element_located(
+                                (By.XPATH, ".//span[contains(@data-testid,'audio-play')]"))
+                        )
+                    except:
+                        if language == 'italian':
+                            text = "impossibile scaricare l'audio"
+                        else:
+                            text = 'unable to download the audio'
+                        output_label_2.configure(text=text)
+                        log_dict[getDateTime()] = text
+                        window.update()
+                except:
+                    pass
+                downContext = messages.find_element_by_xpath(".//span[contains(@data-testid,'down-context')]")
+                downContext.click()
+                if language == 'italian':
+                    button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
+                        (By.XPATH, ".//div[contains(@title,'Scarica')]")))
+                else:
+                    button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
+                        (By.XPATH, ".//div[contains(@title,'Download')]")))
+                button.click()
+            except:
+                pass
+        try:
+            message = messages.find_element_by_xpath(
+                ".//span[contains(@class,'selectable-text copyable-text')]"
+            ).text
+            emojis = messages.find_elements_by_xpath(
+                ".//img[contains(@class,'selectable-text copyable-text')]")
+
+            if len(emojis) != 0:
+                for emoji in emojis:
+                    message = message + emoji.get_attribute("data-plain-text")
+            info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+            info = info.get_attribute("data-pre-plain-text")
+            oraData = info[info.find('[') + 1: info.find(']') + 1]
+            if language == 'english':
+                data = oraData[oraData.find(' ') + 4: oraData.find(']')]
+            else:
+                data = oraData[oraData.find(' ') + 1: oraData.find(']')]
+            ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+            mittente = info.split(']')[1].strip()
+            mittente = mittente.split(':')[0].strip()
+            message = message.replace("\n", " ")
+            if len(message) > 90:
+                trimMessage = message[:90]
+                tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
+            else:
+                tree.insert("", 0, values=(data, ora, mittente, message))
+            finalMessage = data + "," + ora + "," + mittente + "," + message
+            window.update()
+            f.write(finalMessage)
+            f.write('\n')
+
+        # only emojis in the message
+        except NoSuchElementException:
+            try:
+                for emoji in messages.find_elements_by_xpath(
+                        ".//img[contains(@class,'selectable-text copyable-text')]"):
                     info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
                     info = info.get_attribute("data-pre-plain-text")
+                    message = emoji.get_attribute("data-plain-text")
+
                     oraData = info[info.find('[') + 1: info.find(']') + 1]
-                    if language == 'english':
-                        data = oraData[oraData.find(' ') + 4: oraData.find(']')]
-                    else:
-                        data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                    data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
                     message = message.replace("\n", " ")
@@ -218,42 +235,11 @@ def readMessages(name, driver):
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
-
-                # only emojis in the message
-                except NoSuchElementException:
-                    try:
-                        for emoji in messages.find_elements_by_xpath(
-                                ".//img[contains(@class,'selectable-text copyable-text')]"):
-                            info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
-                            info = info.get_attribute("data-pre-plain-text")
-                            message = emoji.get_attribute("data-plain-text")
-
-                            oraData = info[info.find('[') + 1: info.find(']') + 1]
-                            ora = oraData[oraData.find('[') + 1: oraData.find(',')]
-                            data = oraData[oraData.find(' ') + 1: oraData.find(']')]
-                            mittente = info.split(']')[1].strip()
-                            mittente = mittente.split(':')[0].strip()
-                            message = message.replace("\n", " ")
-                            if len(message) > 90:
-                                trimMessage = message[:90]
-                                tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
-                            else:
-                                tree.insert("", 0, values=(data, ora, mittente, message))
-                            finalMessage = data + "," + ora + "," + mittente + "," + message
-                            window.update()
-                            f.write(finalMessage)
-                            f.write('\n')
-                    except NoSuchElementException:
-                        pass
-
-        previous = readline.copy()
-        driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
-
-
-
+            except NoSuchElementException:
+                pass
     f.close()
     if language == 'italian':
-        text="generazione del doppio hash della chat in corso..."
+        text = "generazione del doppio hash della chat in corso..."
     else:
         text = 'generating double hash...'
     output_label_2.configure(text=text)
