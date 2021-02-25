@@ -69,10 +69,10 @@ def openChrome():
     options.add_argument("--remote-debugging-port=9222")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     # CREAZIONE PROFILO SOLO PER DEBUG
-    #'''
+
     options.add_argument(
-        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 4")  # crea un nuovo profilo utente in chrome per scansionare il qw
-    #'''
+        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+
     args = ["hide_console", ]
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
 
@@ -89,16 +89,28 @@ def openChrome():
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
-        f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
-        for key, value in log_dict.items():
-            f_hash.write('\n'+value+','+key+',,')
-            sheet1.write(nRow, 0, value)
-            sheet1.write(nRow, 1, key)
-            nRow = nRow + 1
-        f_hash.flush()
-        f_hash.close()
+        if not os.path.exists(pyExePath):
+            os.makedirs(pyExePath)
+            f_hash = open(pyExePath + 'hashing.csv', 'w', encoding='utf-8')
+            for key, value in log_dict.items():
+                f_hash.write('\n' + value + ',' + key + ',,')
+                sheet1.write(nRow, 0, value)
+                sheet1.write(nRow, 1, key)
+                nRow = nRow + 1
+            f_hash.flush()
+            f_hash.close()
+        else:
+            f_hash = open(pyExePath + 'hashing.csv', 'a', encoding='utf-8')
+            for key, value in log_dict.items():
+                f_hash.write('\n' + value + ',' + key + ',,')
+                sheet1.write(nRow, 0, value)
+                sheet1.write(nRow, 1, key)
+                nRow = nRow + 1
+            f_hash.flush()
+            f_hash.close()
+
         driver.close()
-        wb.save(dir+'hash.xls')
+        wb.save(pyExePath+'hash.xls')
 
     return driver
 
@@ -166,10 +178,10 @@ def readMessages(name, driver):
                 downContext.click()
                 if language == 'italian':
                     button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                        (By.XPATH, ".//div[contains(@title,'Scarica')]")))
+                        (By.XPATH, ".//div[contains(@aria-label,'Scarica')]")))
                 else:
                     button = WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(
-                        (By.XPATH, ".//div[contains(@title,'Download')]")))
+                        (By.XPATH, ".//div[contains(@aria-label,'Download')]")))
                 button.click()
             except:
                 pass
@@ -378,6 +390,7 @@ def getChatLabels():
         log_dict[getDateTime()] = text
         choose_label.configure(text="")
         window.update()
+        dir = pyExePath + '\\Scraped\\Hash\\'
         f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
         for key, value in log_dict.items():
             f_hash.write('\n'+value+','+key+',,')
@@ -502,29 +515,29 @@ def saveMedia(name, driver):
     try:
         if language == 'italian':
             element = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info gruppo')]"))
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Info gruppo')]"))
             )
-            info = driver.find_element_by_xpath("//div[contains(@title,'Info gruppo')]")
+            info = driver.find_element_by_xpath("//div[contains(@aria-label,'Info gruppo')]")
             info.click()
         else:
             element = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Group info')]"))
+                EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Group info')]"))
             )
-            info = driver.find_element_by_xpath("//div[contains(@title,'Group info')]")
+            info = driver.find_element_by_xpath("//div[contains(@aria-label,'Group info')]")
             info.click()
     except:
         try:
             if language == 'italian':
                 element = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info contatto')]"))
+                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Info contatto')]"))
                 )
-                info = driver.find_element_by_xpath("//div[contains(@title,'Info contatto')]")
+                info = driver.find_element_by_xpath("//div[contains(@aria-label,'Info contatto')]")
                 info.click()
             else:
                 element = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Contact info')]"))
+                    EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Contact info')]"))
                 )
-                info = driver.find_element_by_xpath("//div[contains(@title,'Contact info')]")
+                info = driver.find_element_by_xpath("//div[contains(@aria-label,'Contact info')]")
                 info.click()
         except:
             try:
@@ -634,9 +647,9 @@ def saveImgVidAud(name, driver):
         while (lastimg == 'false'):
             try:
                 if language == 'italian':
-                    downloadXpath = "//div[@title='Scarica']"
+                    downloadXpath = "//div[@aria-label='Scarica']"
                 else:
-                    downloadXpath = "//div[@title='Download']"
+                    downloadXpath = "//div[@aria-label='Download']"
 
                 download = driver.find_element_by_xpath(downloadXpath)
                 download.click()
@@ -690,9 +703,12 @@ def getChatFromCSV():
 
 def moveArchiviate(driver):
     menuDots = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/div/span")
+    time.sleep(2)
     menuDots.click()
+    time.sleep(2)
     archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
     archiv.click()
+    time.sleep(2)
     chatLabels = []
     recentList = driver.find_elements_by_xpath(
         '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div/div')
@@ -845,7 +861,7 @@ comboLang.set('Italian')
 if __name__ == '__main__':
     window.mainloop()
     # done: rimuovere profilo 1, commentare per renderlo più generale
-    # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
+    # pyinstaller --noconsole --icon=whatsapp.ico --name WhatsAppScraper --onefile main.py
 
     #TODO:
     # push icona nel repo
