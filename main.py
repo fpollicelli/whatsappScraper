@@ -112,6 +112,9 @@ def unique(items):
 
     return keep
 def readMessages(name, driver):
+    wb2 = Workbook()
+    sheet2 = wb2.add_sheet('Chat')
+    nRow2 = 1
     if language == 'italian':
         text="scraping dei messaggi in corso..."
     else:
@@ -125,8 +128,19 @@ def readMessages(name, driver):
     f = open(dir + name + '.csv', 'w', encoding='utf-8')
     if language == 'italian':
         f.write('Data,Ora,Mittente,Messaggio\n')
+        sheet2.write(0, 0, 'Data')
+        sheet2.write(0, 1, 'Ora')
+        sheet2.write(0, 2, 'Mittente')
+        sheet2.write(0, 3, 'Messaggio')
+        wb2.save(dir+name+'.xls')
+
     else:
         f.write('Date,Time,Sender,Message\n')
+        sheet2.write(0, 0, 'Date')
+        sheet2.write(0, 1, 'Time')
+        sheet2.write(0, 2, 'Sender')
+        sheet2.write(0, 3, 'Message')
+        wb2.save(dir+name+'.xls')
 
     trovato = False
     previous = []
@@ -215,6 +229,12 @@ def readMessages(name, driver):
                     else:
                         tree.insert("", 0, values=(data, ora, mittente, message))
                     finalMessage = data + "," + ora + "," + mittente + "," + message
+                    sheet2.write(nRow2, 0, data)
+                    sheet2.write(nRow2, 1, ora)
+                    sheet2.write(nRow2, 2, mittente)
+                    sheet2.write(nRow2, 3, message)
+                    wb2.save(dir + name + '.xls')
+                    nRow2 = nRow2 + 1
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -242,6 +262,12 @@ def readMessages(name, driver):
                             finalMessage = data + "," + ora + "," + mittente + "," + message
                             window.update()
                             f.write(finalMessage)
+                            sheet2.write(nRow2, 0, data)
+                            sheet2.write(nRow2, 1, ora)
+                            sheet2.write(nRow2, 2, mittente)
+                            sheet2.write(nRow2, 3, message)
+                            wb2.save(dir + name + '.xls')
+                            nRow2 = nRow2 + 1
                             f.write('\n')
                     except NoSuchElementException:
                         pass
@@ -296,7 +322,6 @@ def hashing(name, extension):
             sheet1.write(0, 1, 'Timestamp')
             sheet1.write(0, 2, 'MD5')
             sheet1.write(0, 3, 'SHA512')
-            nRow = nRow + 1
             f_hash.flush();
             f_hash.close()
             wb.save(dir+'hash.xls')
@@ -306,7 +331,6 @@ def hashing(name, extension):
             sheet1.write(0, 1, 'Timestamp')
             sheet1.write(0, 2, 'MD5')
             sheet1.write(0, 3, 'SHA512')
-            nRow = nRow + 1
             f_hash.flush();
             f_hash.close()
             wb.save(dir+'hash.xls')
@@ -330,6 +354,7 @@ def getChatLabels():
     else:
         text = 'opening WhatsApp Web...'
 
+    log_dict.clear()
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     tree.delete(*tree.get_children())
