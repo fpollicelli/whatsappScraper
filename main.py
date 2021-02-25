@@ -257,10 +257,13 @@ def hashing(name, extension):
         f_hash = open(dir + 'hashing.csv','w', encoding='utf-8')
         if language == 'italian':
             f_hash.write("Nome file,timestamp,md5,sha512")
+            f_hash.flush()
+            f_hash.close()
         else:
             f_hash.write("File name,timestamp,md5,sha512")
+            f_hash.flush()
+            f_hash.close()
 
-        f_hash.flush();f_hash.close()
     f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
     f_hash.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
     f_hash.flush(); f_hash.close()
@@ -531,7 +534,6 @@ def saveMedia(name, driver):
         window.update()
     return
 
-
 def saveDoc(name, driver):
     if language == 'italian':
         text = "salvataggio dei documenti in corso..."
@@ -613,7 +615,7 @@ def saveImgVidAud(name, driver):
         noMedia = True
     return
 
-#SELECT FOLDER 
+#SELECT FOLDER
 def selectFolder():
     global pyExePath
     pyExePath = filedialog.askdirectory()
@@ -801,19 +803,20 @@ comboLang.grid(row=0, column=0, sticky="W", padx=10, pady=10)
 comboLang.set('Italian')
 if __name__ == '__main__':
     window.mainloop()
-    # done: rimuovere profilo 1, commentare per renderlo più generale
+    # per creazione eseguibile: rimuovere profilo 1, commentare per renderlo più generale
     # pyinstaller --noconsole --name WhatsAppScraper --onefile main.py
 
     #TODO:
-    # push icona nel repo
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
-    # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
-    # 5) sistemare visualizzazione del percorso della cartella di destinazione
-        #---> creato backend
+
+
 
 
 
     #DONE:
+    # push icona nel repo
+    # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
+    # 5) sistemare visualizzazione del percorso della cartella di destinazione
     # 1) hashing.csv
     # 2) intestazione hashing + log: NomeChat_timestamp_md5_sha512 con fuso
     # 5) doppio hash: sha,md5
@@ -821,5 +824,3 @@ if __name__ == '__main__':
     # 7) creare esempio contatto.csv
     # 8) opzionale: scraper dal messaggio più recente (per non attendere)
         #NOTA: rimettere in ordine i messaggi nei csv?
-
-
