@@ -15,6 +15,12 @@ import os
 import hashlib
 import tkinter as tk
 import threading
+from xlwt import Workbook
+
+
+wb = Workbook()
+sheet1 = wb.add_sheet('Hash')
+nRow = 1
 
 user = os.environ["USERNAME"]
 window = tk.Tk()
@@ -85,9 +91,15 @@ def openChrome():
         f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
         for key, value in log_dict.items():
             f_hash.write('\n'+value+','+key+',,')
-        f_hash.flush();
+            global nRow
+            sheet1.write(nRow, 0, value)
+            sheet1.write(nRow, 1, key)
+            nRow = nRow + 1
+        f_hash.flush()
         f_hash.close()
         driver.close()
+        wb.save(dir+'hash.xls')
+
     return driver
 
 def readMessages(name, driver):
@@ -257,13 +269,38 @@ def hashing(name, extension):
         f_hash = open(dir + 'hashing.csv','w', encoding='utf-8')
         if language == 'italian':
             f_hash.write("Nome file,timestamp,md5,sha512")
+            global nRow
+            sheet1.write(0, 0, 'Nome file')
+            sheet1.write(0, 1, 'Timestamp')
+            sheet1.write(0, 2, 'MD5')
+            sheet1.write(0, 3, 'SHA512')
+            nRow = nRow + 1
+            f_hash.flush();
+            f_hash.close()
+            wb.save(dir+'hash.xls')
         else:
             f_hash.write("File name,timestamp,md5,sha512")
+            global nRow
+            sheet1.write(0, 0, 'File Name')
+            sheet1.write(0, 1, 'Timestamp')
+            sheet1.write(0, 2, 'MD5')
+            sheet1.write(0, 3, 'SHA512')
+            nRow = nRow + 1
+            f_hash.flush();
+            f_hash.close()
+            wb.save(dir+'hash.xls')
 
-        f_hash.flush();f_hash.close()
+
     f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
     f_hash.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
+    global nRow
+    sheet1.write(nRow, 0, name+extension)
+    sheet1.write(nRow, 1, dateTime)
+    sheet1.write(nRow, 2, md5Digest)
+    sheet1.write(nRow, 3, sha512_digest)
+    nRow = nRow + 1
     f_hash.flush(); f_hash.close()
+    wb.save(dir+'hash.xls')
     return
 
 def getChatLabels():
@@ -346,9 +383,14 @@ def getChatLabels():
         f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
         for key, value in log_dict.items():
             f_hash.write('\n'+value+','+key+',,')
+            global nRow
+            sheet1.write(nRow, 0, value)
+            sheet1.write(nRow, 1, key)
+            nRow = nRow + 1
         f_hash.flush()
         f_hash.close()
         driver.close()
+        wb.save(dir+'hash.xls')
         path = pyExePath + '/Scraped'
         path = os.path.realpath(path)
         os.startfile(path)
@@ -391,9 +433,14 @@ def getChatLabels():
     f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
     for key, value in log_dict.items():
         f_hash.write('\n'+value+','+key+',,')
+        global nRow
+        sheet1.write(nRow, 0, value)
+        sheet1.write(nRow, 1, key)
+        nRow = nRow + 1
     f_hash.flush()
     f_hash.close()
     driver.close()
+    wb.save(dir+'hash.xls')
     path = pyExePath + '/Scraped'
     path = os.path.realpath(path)
     os.startfile(path)
@@ -613,7 +660,7 @@ def saveImgVidAud(name, driver):
         noMedia = True
     return
 
-#SELECT FOLDER 
+#SELECT FOLDER
 def selectFolder():
     global pyExePath
     pyExePath = filedialog.askdirectory()
