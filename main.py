@@ -57,6 +57,7 @@ def findChromeDriver():
 
 
 def openChrome():
+    global nRow
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
         "download.default_directory": pyExePath + "\\Scraped\\Media",
@@ -91,7 +92,6 @@ def openChrome():
         f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
         for key, value in log_dict.items():
             f_hash.write('\n'+value+','+key+',,')
-            global nRow
             sheet1.write(nRow, 0, value)
             sheet1.write(nRow, 1, key)
             nRow = nRow + 1
@@ -252,6 +252,7 @@ def getDateTime():
     return dateTime
 
 def hashing(name, extension):
+    global nRow
     dateTime = getDateTime()
     hash_md5 = hashlib.md5()
     has_sha512 = hashlib.sha512()
@@ -269,7 +270,6 @@ def hashing(name, extension):
         f_hash = open(dir + 'hashing.csv','w', encoding='utf-8')
         if language == 'italian':
             f_hash.write("Nome file,timestamp,md5,sha512")
-            global nRow
             sheet1.write(0, 0, 'Nome file')
             sheet1.write(0, 1, 'Timestamp')
             sheet1.write(0, 2, 'MD5')
@@ -280,7 +280,6 @@ def hashing(name, extension):
             wb.save(dir+'hash.xls')
         else:
             f_hash.write("File name,timestamp,md5,sha512")
-            global nRow
             sheet1.write(0, 0, 'File Name')
             sheet1.write(0, 1, 'Timestamp')
             sheet1.write(0, 2, 'MD5')
@@ -293,7 +292,6 @@ def hashing(name, extension):
 
     f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
     f_hash.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
-    global nRow
     sheet1.write(nRow, 0, name+extension)
     sheet1.write(nRow, 1, dateTime)
     sheet1.write(nRow, 2, md5Digest)
@@ -304,7 +302,7 @@ def hashing(name, extension):
     return
 
 def getChatLabels():
-
+    global nRow
     if language == 'italian':
         text="apertura di WhatsApp Web in corso..."
     else:
@@ -383,7 +381,6 @@ def getChatLabels():
         f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
         for key, value in log_dict.items():
             f_hash.write('\n'+value+','+key+',,')
-            global nRow
             sheet1.write(nRow, 0, value)
             sheet1.write(nRow, 1, key)
             nRow = nRow + 1
@@ -433,7 +430,6 @@ def getChatLabels():
     f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
     for key, value in log_dict.items():
         f_hash.write('\n'+value+','+key+',,')
-        global nRow
         sheet1.write(nRow, 0, value)
         sheet1.write(nRow, 1, key)
         nRow = nRow + 1
