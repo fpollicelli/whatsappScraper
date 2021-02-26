@@ -184,7 +184,37 @@ def readMessages(name, driver):
                 button.click()
             except:
                 pass
+
         try:
+            try: #SALVATAGGIO DI DOC IN CSV
+                element = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, '//button[contains(@title,"Scarica")]'))
+                )
+                download = messages.find_element_by_xpath(
+                    ".//button[contains(@title,'Scarica')]")
+
+                oraData = info[info.find('[') + 1: info.find(']') + 1]
+                if language == 'english':
+                    data = oraData[oraData.find(' ') + 4: oraData.find(']')]
+                else:
+                    data = oraData[oraData.find(' ') + 1: oraData.find(']')]
+                ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                mittente = info.split(']')[1].strip()
+                mittente = mittente.split(':')[0].strip()
+
+                download =download.get_attribute('title')
+                print(download[:-1])
+                if len(download) > 90:
+                    download = download[:90]
+                    tree.insert("", 0, values=(data, ora, mittente, download + '...'))
+                else:
+                    tree.insert("", 0, values=(data, ora, mittente, download))
+                finalMessage = data + "," + ora + "," + mittente + "," + download
+                window.update()
+                f.write(finalMessage)
+                f.write('\n')
+            except: pass
+
             message = messages.find_element_by_xpath(
                 ".//span[contains(@class,'selectable-text copyable-text')]"
             ).text
@@ -880,6 +910,8 @@ if __name__ == '__main__':
     # media scaricato che rimandi al media
     # file excel con log + hash ---> in progress
     # file csv con log + hash
+    # orari con timezone
+    # Whatsappscraper_v.1
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
 
     #done:
