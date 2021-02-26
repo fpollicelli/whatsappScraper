@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from time import gmtime, strftime
+import zipfile
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -17,11 +18,6 @@ import tkinter as tk
 import threading
 from xlwt import Workbook
 
-
-wb = Workbook()
-sheet1 = wb.add_sheet('Hash')
-nRow = 1
-
 user = os.environ["USERNAME"]
 window = tk.Tk()
 window.geometry("900x625")
@@ -34,6 +30,22 @@ NAMES = []
 log_dict = {}
 language = 'italian'
 window.iconbitmap('whatsapp.ico')
+wb = Workbook()
+sheet1 = wb.add_sheet('Hash')
+nRow = 1
+
+if not os.path.exists(pyExePath):
+    os.makedirs(pyExePath)
+    f_hash = open(pyExePath + 'hashing.csv', 'w', encoding='utf-8')
+    f_hash.write("File,timestamp,md5,sha512")
+    sheet1.write(0, 0, 'Nome file')
+    sheet1.write(0, 1, 'Timestamp')
+    sheet1.write(0, 2, 'MD5')
+    sheet1.write(0, 3, 'SHA512')
+    f_hash.flush();
+    f_hash.close()
+    wb.save(pyExePath + 'hash.xls')
+
 
 def detectLanguage(driver):
     global language
@@ -69,10 +81,10 @@ def openChrome():
     options.add_argument("--remote-debugging-port=9222")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     # CREAZIONE PROFILO SOLO PER DEBUG
-    '''
+    #'''
     options.add_argument(
         "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
-    '''
+    #'''
     args = ["hide_console", ]
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
 
@@ -250,7 +262,6 @@ def readMessages(name, driver):
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
-    hashing(pyExePath + '\\Scraped\\Chat\\' + name, '.csv')  # Creazione del doppio hash del file contenente le chat
     return
 
 def getDateTime():
@@ -390,15 +401,7 @@ def getChatLabels():
         log_dict[getDateTime()] = text
         choose_label.configure(text="")
         window.update()
-        dir = pyExePath + '\\Scraped\\Hash\\'
-        f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
-        for key, value in log_dict.items():
-            f_hash.write('\n'+value+','+key+',,')
-            sheet1.write(nRow, 0, value)
-            sheet1.write(nRow, 1, key)
-            nRow = nRow + 1
-        f_hash.flush()
-        f_hash.close()
+
         driver.close()
         wb.save(dir+'hash.xls')
         path = pyExePath + '/Scraped'
@@ -439,18 +442,19 @@ def getChatLabels():
     log_dict[getDateTime()] = text
     choose_label.configure(text="")
     window.update()
-    dir = pyExePath + '\\Scraped\\Hash\\'
-    f_hash = open(dir + 'hashing.csv', 'a', encoding='utf-8')
+
     for key, value in log_dict.items():
-        f_hash.write('\n'+value+','+key+',,')
         sheet1.write(nRow, 0, value)
         sheet1.write(nRow, 1, key)
         nRow = nRow + 1
-    f_hash.flush()
-    f_hash.close()
     driver.close()
-    wb.save(dir+'hash.xls')
+    wb.save(pyExePath+'hash.xls')
     path = pyExePath + '/Scraped'
+    create_zip(path+'/Chat/','chat.zip')
+    zip_hasher('chat.zip')
+    if save_media.get() == 1:
+        create_zip(path + '/Media/','media.zip')
+        zip_hasher('media.zip')
     path = os.path.realpath(path)
     os.startfile(path)
     del NAMES[:]
@@ -746,10 +750,10 @@ def hashingMedia():
 def disableEvent(event):
     return "break"
 
-it = ['Data','Ora','Mittente','Messaggio','scraper pronto',
+it = ['Data (gg/mm/aaa)','Ora','Mittente','Messaggio','scraper pronto',
             'Autori: Domenico Palmisano e Francesca Pollicelli','Opzioni',
             'Caricare lista contatti','Avvia scraper','Scraping chat archiviate','Cartella di destinazione']
-en = ['Date','Time','Sender','Message','scraper ready',
+en = ['Date (mm/gg/aaa)','Time','Sender','Message','scraper ready',
             'Authors: Domenico Palmisano and Francesca Pollicelli','Options',
             'Load contact list','Start scraper','Scraping archived chats','Destination folder']
 
@@ -781,15 +785,53 @@ def change_language(index, value, op):
         choose_dest.config(text=it[10])
     return
 
+def getfilesfrom(directory):
+    return filter(lambda x:
+                  not os.path.isdir(os.path.join(directory, x)),
+                  os.listdir(directory))
+
+def create_zip(directory, zip_name):
+    zf = zipfile.ZipFile(zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
+    filestozip = getfilesfrom(directory)
+    for afile in filestozip:
+        zf.write(os.path.join(directory, afile), afile)
+    zf.close()
+    return
+
+def zip_hasher(zip_name):
+    wb_hash = Workbook()
+    dateTime = getDateTime()
+    with open(zip_name, "rb") as f:
+        hash_md5 = hashlib.md5()
+        hash_sha512 = hashlib.sha512()
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+            hash_sha512.update(chunk)
+    md5_digest = hash_md5.hexdigest()
+    sha512_digest = hash_sha512.hexdigest()
+    sheet1 = wb_hash.add_sheet('Hash')
+    sheet1.write(0, 0, 'File')
+    sheet1.write(1,0,zip_name)
+    sheet1.write(0, 1, 'Timestamp')
+    sheet1.write(1, 1, dateTime)
+    sheet1.write(0, 2, 'MD5')
+    sheet1.write(1, 2, md5_digest)
+    sheet1.write(0, 3, 'SHA512')
+    sheet1.write(1, 3, sha512_digest)
+    wb_hash.save('hash.xls')
+    return
+
+
+
 tree = ttk.Treeview(window, show="headings", columns=(it[0],it[1], it[2], it[3]), height=14)
 tree.heading(it[0], text=it[0], anchor=tk.W)
 tree.heading(it[1], text=it[1], anchor=tk.W)
 tree.heading(it[2], text=it[2], anchor=tk.W)
 tree.heading(it[3], text=it[3], anchor=tk.W)
-tree.column('#1', minwidth=80, stretch=False, width=80)
+tree.column('#1', minwidth=110, stretch=False, width=110)
 tree.column('#2', minwidth=60, stretch=False, width=60)
 tree.column('#3', minwidth=170, stretch=False, width=170)
-tree.column('#4', minwidth=565, stretch=True, width=565)
+tree.column('#4', minwidth=535, stretch=True, width=535)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
 
@@ -858,27 +900,25 @@ comboLang = ttk.Combobox(window,textvar=v, state="readonly",
                                     "Italian"])
 comboLang.grid(row=0, column=0, sticky="W", padx=10, pady=10)
 comboLang.set('Italian')
+
 if __name__ == '__main__':
     window.mainloop()
     # done: rimuovere profilo 1, commentare per renderlo più generale
     # pyinstaller --noconsole --icon=whatsapp.ico --name WhatsAppScraper --onefile main.py
+    # Whatsappscraper_v.1
 
     #TODO:
-    # push icona nel repo
+    # zip con tutte le conversaz
+    # zip con tutti i media
+    # media scaricato che rimandi al media
+    # file excel con log
+    # file excel con hash unico
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
-    # 4) aggiungere pulsante per scegliere cartella Scraped -- in progress
-    # 5) sistemare visualizzazione del percorso della cartella di destinazione
-        #---> creato backend
+
+    #done:
+    # 1) gestire data e ora in anteprima con fuso orario e formato orario
 
 
 
-    #DONE:
-    # 1) hashing.csv
-    # 2) intestazione hashing + log: NomeChat_timestamp_md5_sha512 con fuso
-    # 5) doppio hash: sha,md5
-    # 6) salvare log in hashing.csv (a fine scraping)
-    # 7) creare esempio contatto.csv
-    # 8) opzionale: scraper dal messaggio più recente (per non attendere)
-        #NOTA: rimettere in ordine i messaggi nei csv?
 
 
