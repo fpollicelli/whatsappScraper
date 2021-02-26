@@ -33,18 +33,16 @@ window.iconbitmap('whatsapp.ico')
 wb = Workbook()
 sheet1 = wb.add_sheet('Hash')
 nRow = 1
+with open("hashing.csv", "w") as file_hash:
+    file_hash.write("File,timestamp,md5,sha512")
 
 if not os.path.exists(pyExePath):
     os.makedirs(pyExePath)
-    f_hash = open(pyExePath + 'hashing.csv', 'w', encoding='utf-8')
-    f_hash.write("File,timestamp,md5,sha512")
-    sheet1.write(0, 0, 'Nome file')
+    sheet1.write(0, 0, 'File')
     sheet1.write(0, 1, 'Timestamp')
     sheet1.write(0, 2, 'MD5')
     sheet1.write(0, 3, 'SHA512')
-    f_hash.flush();
-    f_hash.close()
-    wb.save(pyExePath + 'hash.xls')
+    wb.save(pyExePath+'\log.xls')
 
 
 def detectLanguage(driver):
@@ -101,28 +99,17 @@ def openChrome():
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
-        if not os.path.exists(pyExePath):
-            os.makedirs(pyExePath)
-            f_hash = open(pyExePath + 'hashing.csv', 'w', encoding='utf-8')
-            for key, value in log_dict.items():
-                f_hash.write('\n' + value + ',' + key + ',,')
-                sheet1.write(nRow, 0, value)
-                sheet1.write(nRow, 1, key)
-                nRow = nRow + 1
-            f_hash.flush()
-            f_hash.close()
-        else:
-            f_hash = open(pyExePath + 'hashing.csv', 'a', encoding='utf-8')
-            for key, value in log_dict.items():
-                f_hash.write('\n' + value + ',' + key + ',,')
-                sheet1.write(nRow, 0, value)
-                sheet1.write(nRow, 1, key)
-                nRow = nRow + 1
-            f_hash.flush()
-            f_hash.close()
+        f_hash = open('hashing.csv', 'a', encoding='utf-8')
+        for key, value in log_dict.items():
+            f_hash.write('\n' + value + ',' + key + ',,')
+            sheet1.write(nRow, 0, value)
+            sheet1.write(nRow, 1, key)
+            nRow = nRow + 1
+        f_hash.flush()
+        f_hash.close()
 
         driver.close()
-        wb.save(pyExePath+'hash.xls')
+        wb.save(pyExePath+'\log.xls')
 
     return driver
 
@@ -288,39 +275,16 @@ def hashing(name, extension):
         for chunk in iter(lambda: f.read(4096), b""):
             has_sha512.update(chunk)
     sha512_digest = has_sha512.hexdigest()
-    dir = pyExePath + '\\Scraped\\Hash\\'
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-        f_hash = open(dir + 'hashing.csv','w', encoding='utf-8')
-        if language == 'italian':
-            f_hash.write("Nome file,timestamp,md5,sha512")
-            sheet1.write(0, 0, 'Nome file')
-            sheet1.write(0, 1, 'Timestamp')
-            sheet1.write(0, 2, 'MD5')
-            sheet1.write(0, 3, 'SHA512')
-            f_hash.flush();
-            f_hash.close()
-            wb.save(dir+'hash.xls')
-        else:
-            f_hash.write("File name,timestamp,md5,sha512")
-            sheet1.write(0, 0, 'File Name')
-            sheet1.write(0, 1, 'Timestamp')
-            sheet1.write(0, 2, 'MD5')
-            sheet1.write(0, 3, 'SHA512')
-            f_hash.flush();
-            f_hash.close()
-            wb.save(dir+'hash.xls')
+    with open("hashing.csv", "a") as hashingfile:
 
+        hashingfile.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
 
-    f_hash = open(dir + 'hashing.csv','a', encoding='utf-8')
-    f_hash.write('\n'+name+extension+','+dateTime+','+md5Digest+','+sha512_digest)
     sheet1.write(nRow, 0, name+extension)
     sheet1.write(nRow, 1, dateTime)
     sheet1.write(nRow, 2, md5Digest)
     sheet1.write(nRow, 3, sha512_digest)
     nRow = nRow + 1
-    f_hash.flush(); f_hash.close()
-    wb.save(dir+'hash.xls')
+    wb.save(pyExePath+'\log.xls')
     return
 
 def getChatLabels():
@@ -403,7 +367,7 @@ def getChatLabels():
         window.update()
 
         driver.close()
-        wb.save(dir+'hash.xls')
+        wb.save(pyExePath+'\log.xls')
         path = pyExePath + '/Scraped'
         path = os.path.realpath(path)
         os.startfile(path)
@@ -442,13 +406,17 @@ def getChatLabels():
     log_dict[getDateTime()] = text
     choose_label.configure(text="")
     window.update()
-
+    f_hash = open('hashing.csv', 'a', encoding='utf-8')
     for key, value in log_dict.items():
+        f_hash.write("File,timestamp,md5,sha512")
+
         sheet1.write(nRow, 0, value)
         sheet1.write(nRow, 1, key)
         nRow = nRow + 1
+    f_hash.flush()
+    f_hash.close()
     driver.close()
-    wb.save(pyExePath+'hash.xls')
+    wb.save(pyExePath+'\log.xls')
     path = pyExePath + '/Scraped'
     create_zip(path+'/Chat/','chat.zip')
     zip_hasher('chat.zip')
@@ -818,7 +786,7 @@ def zip_hasher(zip_name):
     sheet1.write(1, 2, md5_digest)
     sheet1.write(0, 3, 'SHA512')
     sheet1.write(1, 3, sha512_digest)
-    wb_hash.save('hash.xls')
+    wb_hash.save('log.xls')
     return
 
 
@@ -908,14 +876,15 @@ if __name__ == '__main__':
     # Whatsappscraper_v.1
 
     #TODO:
-    # zip con tutte le conversaz
-    # zip con tutti i media
+
     # media scaricato che rimandi al media
-    # file excel con log
-    # file excel con hash unico
+    # file excel con log + hash ---> in progress
+    # file csv con log + hash
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
 
     #done:
+    # zip con tutte le conversaz
+    # zip con tutti i media
     # 1) gestire data e ora in anteprima con fuso orario e formato orario
 
 
