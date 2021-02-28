@@ -34,7 +34,7 @@ language = 'italian'
 window.iconbitmap('whatsapp.ico')
 wb = Workbook()
 sheet1 = wb.add_sheet('Hash')
-nRow=3
+nRow=4
 
 sheet1.write(0, 0, 'WhatsappScraper_v.1')
 sheet1.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
@@ -998,7 +998,7 @@ def zip_hasher(zip_name):
     md5_digest = hash_md5.hexdigest()
     sha512_digest = hash_sha512.hexdigest()
     if save_media.get() == 1:
-        if zip_name == 'chat.zip':
+        if zip_name == "chat.zip":
             sheet1.write(2, 0, zip_name)
             sheet1.write(2, 1, dateTime)
             sheet1.write(2, 2, md5_digest)
@@ -1010,7 +1010,6 @@ def zip_hasher(zip_name):
             sheet1.write(3, 2, md5_digest)
             sheet1.write(3, 3, sha512_digest)
             wb.save(pyExePath+'\log.xls')
-            nRow = nRow +1
     else:
         sheet1.write(2, 0, zip_name)
         sheet1.write(2, 1, dateTime)
@@ -1106,7 +1105,6 @@ if __name__ == '__main__':
     # TODO:
 
     # test su più media in csv
-    # Whatsappscraper_v.1
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
 
     # done:
@@ -1117,3 +1115,4 @@ if __name__ == '__main__':
     # 1) gestire data e ora in anteprima con fuso orario e formato orario
     # file excel con log + hash ---> in progress
     # file csv con log + hash
+    # Whatsappscraper_v.1
