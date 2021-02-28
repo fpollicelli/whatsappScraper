@@ -753,13 +753,13 @@ def saveMedia(name, driver):
 
     try:
         if language == 'italian':
-            element = WebDriverWait(driver, 20).until(
+            element = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//span[text()='Media, link e documenti']"))
             )
             media = driver.find_element_by_xpath("//span[text()='Media, link e documenti']")
             media.click()
         else:
-            element = WebDriverWait(driver, 5).until(
+            element = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Media, Links and Docs')]"))
             )
             media = driver.find_element_by_xpath("//div[contains(@title,'Media, Links and Docs')]")
@@ -827,7 +827,7 @@ def saveImgVidAud(name, driver):
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        element = WebDriverWait(driver, 20).until(
+        element = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, "//div[contains(@style,'background-image')]"))
         )
         image = driver.find_element_by_xpath("//div[contains(@style,'background-image')]")
@@ -846,7 +846,7 @@ def saveImgVidAud(name, driver):
             except:
                 pass
             try:
-                element = WebDriverWait(driver, 20).until(
+                element = WebDriverWait(driver, 10).until(
                     EC.element_to_be_clickable(
                         (By.XPATH, '//*[@id="app"]/div/span[3]/div/div/div[2]/div[2]/div[1]/div'))
                 )
