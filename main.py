@@ -120,7 +120,7 @@ def openChrome():
         f_hash.flush()
         f_hash.close()
         driver.close()
-        wb_hash.save('log.xls')
+        wb_hash.save(pyExePath+'\log.xls')
 
     return driver
 
@@ -575,7 +575,7 @@ def getChatLabels():
     f_hash.flush()
     f_hash.close()
     driver.close()
-    wb_hash.save('log.xls')
+    wb_hash.save(pyExePath+'\log.xls')
     wb.save(pyExePath + '\log.xls')
     path = pyExePath + '/Scraped'
     create_zip(path + '/Chat/', 'chat.zip')
@@ -885,10 +885,10 @@ def disableEvent(event):
     return "break"
 
 
-it = ['Data (gg/mm/aaaa)', 'Ora', 'Mittente', 'Messaggio', 'scraper pronto',
+it = ['Data gg/mm/aaaa', 'Ora', 'Mittente', 'Messaggio', 'scraper pronto',
       'Autori: Domenico Palmisano e Francesca Pollicelli', 'Opzioni',
       'Caricare lista contatti', 'Avvia scraper', 'Scraping chat archiviate', 'Cartella di destinazione']
-en = ['Date (mm/gg/aaaa)', 'Time', 'Sender', 'Message', 'scraper ready',
+en = ['Date mm/gg/aaaa', 'Time', 'Sender', 'Message', 'scraper ready',
       'Authors: Domenico Palmisano and Francesca Pollicelli', 'Options',
       'Load contact list', 'Start scraper', 'Scraping archived chats', 'Destination folder']
 
@@ -951,7 +951,12 @@ def zip_hasher(zip_name,row):
     sheet_hash.write(row, 1, dateTime)
     sheet_hash.write(row, 2, md5_digest)
     sheet_hash.write(row, 3, sha512_digest)
-    wb_hash.save('log.xls')
+
+    f_hash = open('hashing.csv', 'a', encoding='utf-8')
+    f_hash.write(zip_name+","+dateTime+","+md5_digest+","+sha512_digest)
+    f_hash.flush()
+    f_hash.close()
+    wb_hash.save(pyExePath+'\log.xls')
     return
 
 
