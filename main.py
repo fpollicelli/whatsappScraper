@@ -37,18 +37,26 @@ sheet1 = wb.add_sheet('Hash')
 wb_hash = Workbook()
 
 sheet_hash = wb_hash.add_sheet('Hash')
-sheet_hash.write(0, 0, 'File')
-sheet_hash.write(0, 1, 'Timestamp')
-sheet_hash.write(0, 2, 'MD5')
-sheet_hash.write(0, 3, 'SHA512')
-nRow = 2
+sheet_hash.write(0, 0, 'WhatsappScraper_v.1')
+sheet_hash.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
+sheet_hash.write(0, 2, 'Authors: Francesca Pollicelli')
+sheet_hash.write(0, 3, 'Domenico Palmisano')
+sheet_hash.write(1, 0, 'File')
+sheet_hash.write(1, 1, 'Timestamp')
+sheet_hash.write(1, 2, 'MD5')
+sheet_hash.write(1, 3, 'SHA512')
+nRow = 3
 
 if not os.path.exists(pyExePath):
     os.makedirs(pyExePath)
-    sheet1.write(0, 0, 'File')
-    sheet1.write(0, 1, 'Timestamp')
-    sheet1.write(0, 2, 'MD5')
-    sheet1.write(0, 3, 'SHA512')
+    sheet1.write(0, 0, 'WhatsappScraper_v.1')
+    sheet1.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
+    sheet1.write(0, 2, 'Authors: Francesca Pollicelli')
+    sheet1.write(0, 3, 'Domenico Palmisano')
+    sheet1.write(1, 0, 'File')
+    sheet1.write(1, 1, 'Timestamp')
+    sheet1.write(1, 2, 'MD5')
+    sheet1.write(1, 3, 'SHA512')
     wb.save(pyExePath + '\log.xls')
 
 
@@ -110,7 +118,7 @@ def openChrome():
         log_dict[getDateTime()] = text
         window.update()
         if (save_media.get() == 1):
-            nRow = 3
+            nRow = 4
         for key, value in log_dict.items():
             sheet_hash.write(nRow, 0, value)
             sheet_hash.write(nRow, 1, key)
@@ -567,10 +575,10 @@ def getChatLabels():
     wb.save(pyExePath + '\log.xls')
     path = pyExePath + '/Scraped'
     create_zip(path + '/Chat/', 'chat.zip')
-    zip_hasher('chat.zip',1)
+    zip_hasher('chat.zip',2)
     if save_media.get() == 1:
         create_zip(path + '/Media/', 'media.zip')
-        zip_hasher('media.zip',2)
+        zip_hasher('media.zip',3)
     shutil.rmtree(path)
     open_folder = os.path.realpath(pyExePath)
     os.startfile(open_folder)
