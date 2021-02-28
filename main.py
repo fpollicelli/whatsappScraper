@@ -34,30 +34,17 @@ language = 'italian'
 window.iconbitmap('whatsapp.ico')
 wb = Workbook()
 sheet1 = wb.add_sheet('Hash')
-wb_hash = Workbook()
+nRow=3
 
-sheet_hash = wb_hash.add_sheet('Hash')
-sheet_hash.write(0, 0, 'WhatsappScraper_v.1')
-sheet_hash.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
-sheet_hash.write(0, 2, 'Authors: Francesca Pollicelli')
-sheet_hash.write(0, 3, 'Domenico Palmisano')
-sheet_hash.write(1, 0, 'File')
-sheet_hash.write(1, 1, 'Timestamp')
-sheet_hash.write(1, 2, 'MD5')
-sheet_hash.write(1, 3, 'SHA512')
-nRow = 3
-
-if not os.path.exists(pyExePath):
-    os.makedirs(pyExePath)
-    sheet1.write(0, 0, 'WhatsappScraper_v.1')
-    sheet1.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
-    sheet1.write(0, 2, 'Authors: Francesca Pollicelli')
-    sheet1.write(0, 3, 'Domenico Palmisano')
-    sheet1.write(1, 0, 'File')
-    sheet1.write(1, 1, 'Timestamp')
-    sheet1.write(1, 2, 'MD5')
-    sheet1.write(1, 3, 'SHA512')
-    wb.save(pyExePath + '\log.xls')
+sheet1.write(0, 0, 'WhatsappScraper_v.1')
+sheet1.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
+sheet1.write(0, 2, 'Authors: Francesca Pollicelli')
+sheet1.write(0, 3, 'Domenico Palmisano')
+sheet1.write(1, 0, 'File')
+sheet1.write(1, 1, 'Timestamp')
+sheet1.write(1, 2, 'MD5')
+sheet1.write(1, 3, 'SHA512')
+wb.save(pyExePath + '\log.xls')
 
 
 def detectLanguage(driver):
@@ -117,14 +104,12 @@ def openChrome():
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
-        if (save_media.get() == 1):
-            nRow = 4
         for key, value in log_dict.items():
-            sheet_hash.write(nRow, 0, value)
-            sheet_hash.write(nRow, 1, key)
+            sheet1.write(nRow, 0, value)
+            sheet1.write(nRow, 1, key)
             nRow = nRow + 1
         driver.close()
-        wb_hash.save(pyExePath + '\log.xls')
+        wb.save(pyExePath + '\log.xls')
 
     return driver
 
@@ -423,27 +408,6 @@ def getDateTime():
     return dateTime
 
 
-def hashing(name, extension):
-    global nRow
-    dateTime = getDateTime()
-    hash_md5 = hashlib.md5()
-    has_sha512 = hashlib.sha512()
-    with open(name + extension, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    md5Digest = hash_md5.hexdigest()
-    with open(name + extension, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            has_sha512.update(chunk)
-    sha512_digest = has_sha512.hexdigest()
-    sheet1.write(nRow, 0, name + extension)
-    sheet1.write(nRow, 1, dateTime)
-    sheet1.write(nRow, 2, md5Digest)
-    sheet1.write(nRow, 3, sha512_digest)
-    nRow = nRow + 1
-    wb.save(pyExePath + '\log.xls')
-    return
-
 
 def getChatLabels():
     global nRow
@@ -451,6 +415,37 @@ def getChatLabels():
         text = "apertura di WhatsApp Web in corso..."
     else:
         text = 'opening WhatsApp Web...'
+    try:
+        f = open(pyExePath+"/chat.zip", 'r')
+    except:
+        pass
+    else:
+        f.close()
+        os.remove(pyExePath + "/chat.zip")
+
+    try:
+        f = open(pyExePath+"/hashing.csv", 'r')
+    except:
+        pass
+    else:
+        f.close()
+        os.remove(pyExePath + "/hashing.csv")
+
+    try:
+        f = open(pyExePath+"/media.zip", 'r')
+    except:
+        pass
+    else:
+        f.close()
+        os.remove(pyExePath + "/media.zip")
+
+    try:
+        f = open(pyExePath+"/log.xls", 'r')
+    except:
+        pass
+    else:
+        f.close()
+        os.remove(pyExePath + "/log.xls")
 
     log_dict.clear()
     output_label_2.configure(text=text)
@@ -590,21 +585,18 @@ def getChatLabels():
     log_dict[getDateTime()] = text
     choose_label.configure(text="")
     window.update()
-    if (save_media.get() == 1):
-        nRow = 3
     for key, value in log_dict.items():
-        sheet_hash.write(nRow, 0, value)
-        sheet_hash.write(nRow, 1, key)
+        sheet1.write(nRow, 0, value)
+        sheet1.write(nRow, 1, key)
         nRow = nRow + 1
     driver.close()
-    wb_hash.save(pyExePath+'\log.xls')
-    wb.save(pyExePath + '\log.xls')
+    wb.save(pyExePath+'\log.xls')
     path = pyExePath + '/Scraped'
-    create_zip(path + '/Chat/', 'chat.zip')
-    zip_hasher('chat.zip',2)
+    create_zip(path, 'chat.zip')
+    zip_hasher('chat.zip')
     if save_media.get() == 1:
-        create_zip(path + '/Media/', 'media.zip')
-        zip_hasher('media.zip',3)
+        create_zip(path, 'media.zip')
+        zip_hasher('media.zip')
     shutil.rmtree(path)
     open_folder = os.path.realpath(pyExePath)
     os.startfile(open_folder)
@@ -657,7 +649,6 @@ def iterChatList(chatLabels, driver):
                 output_label_2.configure(text=text)
                 log_dict[getDateTime()] = text
                 window.update()
-                hashingMedia()
         except:
             if language == 'italian':
                 text = "impossibile caricare le chat"
@@ -899,12 +890,6 @@ def moveArchiviate(driver):
     return chatNames
 
 
-def hashingMedia():
-    directory = pyExePath + '/Scraped/Media/'
-    for filename in os.listdir(directory):
-        file = os.path.splitext(filename)
-        hashing(directory + file[0], file[1])
-    return
 
 
 def disableEvent(event):
@@ -963,7 +948,8 @@ def create_zip(directory, zip_name):
     return
 
 
-def zip_hasher(zip_name,row):
+def zip_hasher(zip_name):
+    global nRow
     dateTime = getDateTime()
     with open(pyExePath+"/"+zip_name, "rb") as f:
         hash_md5 = hashlib.md5()
@@ -973,11 +959,26 @@ def zip_hasher(zip_name,row):
             hash_sha512.update(chunk)
     md5_digest = hash_md5.hexdigest()
     sha512_digest = hash_sha512.hexdigest()
-    sheet_hash.write(row, 0, zip_name)
-    sheet_hash.write(row, 1, dateTime)
-    sheet_hash.write(row, 2, md5_digest)
-    sheet_hash.write(row, 3, sha512_digest)
-    wb_hash.save(pyExePath+'\log.xls')
+    if save_media.get() == 1:
+        if zip_name == 'chat.zip':
+            sheet1.write(2, 0, zip_name)
+            sheet1.write(2, 1, dateTime)
+            sheet1.write(2, 2, md5_digest)
+            sheet1.write(2, 3, sha512_digest)
+            wb.save(pyExePath+'\log.xls')
+        else:
+            sheet1.write(3, 0, zip_name)
+            sheet1.write(3, 1, dateTime)
+            sheet1.write(3, 2, md5_digest)
+            sheet1.write(3, 3, sha512_digest)
+            wb.save(pyExePath+'\log.xls')
+            nRow = nRow +1
+    else:
+        sheet1.write(2, 0, zip_name)
+        sheet1.write(2, 1, dateTime)
+        sheet1.write(2, 2, md5_digest)
+        sheet1.write(2, 3, sha512_digest)
+        wb.save(pyExePath + '\log.xls')
     return
 
 
