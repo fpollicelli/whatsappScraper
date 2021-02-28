@@ -1,3 +1,4 @@
+import shutil
 from datetime import datetime, date
 from time import gmtime, strftime
 import zipfile
@@ -526,7 +527,7 @@ def getChatLabels():
 
         driver.close()
         wb.save(pyExePath + '\log.xls')
-        path = pyExePath + '/Scraped'
+        path = pyExePath
         path = os.path.realpath(path)
         os.startfile(path)
         del NAMES[:]
@@ -583,9 +584,10 @@ def getChatLabels():
     if save_media.get() == 1:
         create_zip(path + '/Media/', 'media.zip')
         zip_hasher('media.zip',2)
-    path = os.path.realpath(path)
+    path = os.path.realpath(pyExePath)
     os.startfile(path)
     del NAMES[:]
+    shutil.rmtree(path)
     return
 
 
@@ -929,7 +931,7 @@ def getfilesfrom(directory):
 
 
 def create_zip(directory, zip_name):
-    zf = zipfile.ZipFile(zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
+    zf = zipfile.ZipFile(pyExePath+"/"+zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
     filestozip = getfilesfrom(directory)
     for afile in filestozip:
         zf.write(os.path.join(directory, afile), afile)
@@ -939,7 +941,7 @@ def create_zip(directory, zip_name):
 
 def zip_hasher(zip_name,row):
     dateTime = getDateTime()
-    with open(zip_name, "rb") as f:
+    with open(pyExePath+"/"+zip_name, "rb") as f:
         hash_md5 = hashlib.md5()
         hash_sha512 = hashlib.sha512()
         for chunk in iter(lambda: f.read(4096), b""):
@@ -1044,15 +1046,13 @@ if __name__ == '__main__':
     # Whatsappscraper_v.1
 
     # TODO:
-
-
-    # file excel con log + hash ---> in progress
     # file csv con log + hash
     # test su più media in csv
     # Whatsappscraper_v.1
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
 
     # done:
+    # file excel con log + hash
     # orari con timezone
     # media scaricato che rimandi al media
     # zip con tutte le conversaz
