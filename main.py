@@ -1,3 +1,4 @@
+import shutil
 from datetime import datetime, date
 from time import gmtime, strftime
 import zipfile
@@ -115,7 +116,7 @@ def openChrome():
             sheet_hash.write(nRow, 1, key)
             nRow = nRow + 1
         driver.close()
-        wb_hash.save(pyExePath+'\log.xls')
+        wb_hash.save(pyExePath + '\log.xls')
 
     return driver
 
@@ -517,7 +518,7 @@ def getChatLabels():
 
         driver.close()
         wb.save(pyExePath + '\log.xls')
-        path = pyExePath + '/Scraped'
+        path = pyExePath
         path = os.path.realpath(path)
         os.startfile(path)
         del NAMES[:]
@@ -570,12 +571,13 @@ def getChatLabels():
     if save_media.get() == 1:
         create_zip(path + '/Media/', 'media.zip')
         zip_hasher('media.zip',2)
-    path = os.path.realpath(path)
-    os.startfile(path)
+    shutil.rmtree(path)
+    open_folder = os.path.realpath(pyExePath)
+    os.startfile(open_folder)
     del NAMES[:]
 
-    read_file = pandas.read_excel(r'D:\Magistrale\Sicurezza delle reti e dei sistemi distribuiti\Progetto Scraper Whatapp\log.xls')
-    read_file.to_csv(r'D:\Magistrale\Sicurezza delle reti e dei sistemi distribuiti\Progetto Scraper Whatapp\hashing.csv', index=None, header=True)
+    read_file = pandas.read_excel(pyExePath+'/log.xls')
+    read_file.to_csv(pyExePath+'/hashing.csv', index=None, header=True)
     return
 
 
@@ -919,7 +921,7 @@ def getfilesfrom(directory):
 
 
 def create_zip(directory, zip_name):
-    zf = zipfile.ZipFile(zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
+    zf = zipfile.ZipFile(pyExePath+"/"+zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
     filestozip = getfilesfrom(directory)
     for afile in filestozip:
         zf.write(os.path.join(directory, afile), afile)
@@ -929,7 +931,7 @@ def create_zip(directory, zip_name):
 
 def zip_hasher(zip_name,row):
     dateTime = getDateTime()
-    with open(zip_name, "rb") as f:
+    with open(pyExePath+"/"+zip_name, "rb") as f:
         hash_md5 = hashlib.md5()
         hash_sha512 = hashlib.sha512()
         for chunk in iter(lambda: f.read(4096), b""):
@@ -1029,9 +1031,6 @@ if __name__ == '__main__':
     # Whatsappscraper_v.1
 
     # TODO:
-
-
-
 
     # test su più media in csv
     # Whatsappscraper_v.1
