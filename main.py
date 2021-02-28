@@ -118,6 +118,8 @@ def openChrome():
 
 
 def readMessages(name, driver):
+    timezone = strftime("GMT%z", gmtime())
+    timezone = timezone[:-2]
     list_audio = []
     list_img = []
     list_video = []
@@ -211,12 +213,16 @@ def readMessages(name, driver):
                 mittente = mittente.split(':')[0].strip()
 
                 download = download.get_attribute('title')
+                if language == 'italian':
+                    download = download[9:-1]
+                else:
+                    download = download[10:-1]
                 if len(download) > 90:
                     download = download[:90]
-                    tree.insert("", 0, values=(data, ora, mittente, "DOC: " + download + '...'))
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Doc: " + download + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora, mittente, "DOC: " + download))
-                finalMessage = data + "," + ora + "," + mittente + "," + "DOC: " + download
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Doc: " + download))
+                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Doc: " + download
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
@@ -249,10 +255,10 @@ def readMessages(name, driver):
                     count_audio += 1
                 if len(audio_name) > 90:
                     audio_name = audio_name[:90]
-                    tree.insert("", 0, values=(data, ora, mittente, "Audio: " + audio_name + '...'))
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Audio: " + audio_name + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora, mittente, "Audio: " + audio_name))
-                finalMessage = data + "," + ora + "," + mittente + "," + "Audio: " + audio_name
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Audio: " + audio_name))
+                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Audio: " + audio_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
@@ -283,10 +289,10 @@ def readMessages(name, driver):
                     count_img += 1
                 if len(img_name) > 90:
                     img_name = img_name[:90]
-                    tree.insert("", 0, values=(data, ora, mittente, "Img: " + img_name + '...'))
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + img_name + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora, mittente, "Img: " + img_name))
-                finalMessage = data + "," + ora + "," + mittente + "," + "Img: " + img_name
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + img_name))
+                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Img: " + img_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
@@ -316,10 +322,10 @@ def readMessages(name, driver):
                     list_img.append(video_name)
                 if len(video_name) > 90:
                     video_name = video_name[:90]
-                    tree.insert("", 0, values=(data, ora, mittente, "Img: " + video_name + '...'))
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + video_name + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora, mittente, "Img: " + video_name))
-                finalMessage = data + "," + ora + "," + mittente + "," + "Img: " + video_name
+                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + video_name))
+                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Img: " + video_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
@@ -348,10 +354,10 @@ def readMessages(name, driver):
             message = message.replace("\n", " ")
             if len(message) > 90:
                 trimMessage = message[:90]
-                tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
+                tree.insert("", 0, values=(data, ora+" "+timezone, mittente, trimMessage + '...'))
             else:
-                tree.insert("", 0, values=(data, ora, mittente, message))
-            finalMessage = data + "," + ora + "," + mittente + "," + message
+                tree.insert("", 0, values=(data, ora+" "+timezone, mittente, message))
+            finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + message
             window.update()
             f.write(finalMessage)
             f.write('\n')
@@ -373,10 +379,10 @@ def readMessages(name, driver):
                     message = message.replace("\n", " ")
                     if len(message) > 90:
                         trimMessage = message[:90]
-                        tree.insert("", 0, values=(data, ora, mittente, trimMessage + '...'))
+                        tree.insert("", 0, values=(data, ora+" "+timezone, mittente, trimMessage + '...'))
                     else:
-                        tree.insert("", 0, values=(data, ora, mittente, message))
-                    finalMessage = data + "," + ora + "," + mittente + "," + message
+                        tree.insert("", 0, values=(data, ora+" "+timezone, mittente, message))
+                    finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + message
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -563,10 +569,10 @@ def getChatLabels():
     wb.save(pyExePath + '\log.xls')
     path = pyExePath + '/Scraped'
     create_zip(path + '/Chat/', 'chat.zip')
-    zip_hasher('chat.zip')
+    zip_hasher('chat.zip',1)
     if save_media.get() == 1:
         create_zip(path + '/Media/', 'media.zip')
-        zip_hasher('media.zip')
+        zip_hasher('media.zip',2)
     path = os.path.realpath(path)
     os.startfile(path)
     del NAMES[:]
@@ -662,15 +668,15 @@ def saveMedia(name, driver):
             try:
                 if language == 'italian':
                     element = WebDriverWait(driver, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Info lista broadcast')]"))
+                        EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Info lista broadcast')]"))
                     )
-                    info = driver.find_element_by_xpath("//div[contains(@title,'Info lista broadcast')]")
+                    info = driver.find_element_by_xpath("//div[contains(@aria-label,'Info lista broadcast')]")
                     info.click()
                 else:
                     element = WebDriverWait(driver, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, "//div[contains(@title,'Broadcast list info')]"))
+                        EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Broadcast list info')]"))
                     )
-                    info = driver.find_element_by_xpath("//div[contains(@title,'Broadcast list info')]")
+                    info = driver.find_element_by_xpath("//div[contains(@aria-label,'Broadcast list info')]")
                     info.click()
             except:
                 if language == 'italian':
@@ -921,7 +927,8 @@ def create_zip(directory, zip_name):
     return
 
 
-def zip_hasher(zip_name):
+def zip_hasher(zip_name,row):
+    print(zip_name)
     wb_hash = Workbook()
     dateTime = getDateTime()
     with open(zip_name, "rb") as f:
@@ -934,13 +941,13 @@ def zip_hasher(zip_name):
     sha512_digest = hash_sha512.hexdigest()
     sheet1 = wb_hash.add_sheet('Hash')
     sheet1.write(0, 0, 'File')
-    sheet1.write(1, 0, zip_name)
+    sheet1.write(row, 0, zip_name)
     sheet1.write(0, 1, 'Timestamp')
-    sheet1.write(1, 1, dateTime)
+    sheet1.write(row, 1, dateTime)
     sheet1.write(0, 2, 'MD5')
-    sheet1.write(1, 2, md5_digest)
+    sheet1.write(row, 2, md5_digest)
     sheet1.write(0, 3, 'SHA512')
-    sheet1.write(1, 3, sha512_digest)
+    sheet1.write(row, 3, sha512_digest)
     wb_hash.save('log.xls')
     return
 
@@ -951,8 +958,8 @@ tree.heading(it[1], text=it[1], anchor=tk.W)
 tree.heading(it[2], text=it[2], anchor=tk.W)
 tree.heading(it[3], text=it[3], anchor=tk.W)
 tree.column('#1', minwidth=110, stretch=False, width=110)
-tree.column('#2', minwidth=60, stretch=False, width=60)
-tree.column('#3', minwidth=170, stretch=False, width=170)
+tree.column('#2', minwidth=90, stretch=False, width=90)
+tree.column('#3', minwidth=140, stretch=False, width=140)
 tree.column('#4', minwidth=535, stretch=True, width=535)
 style = ttk.Style(window)
 tree.grid(row=5, column=0, padx=10, pady=10, stick='W')
@@ -1033,11 +1040,12 @@ if __name__ == '__main__':
 
     # file excel con log + hash ---> in progress
     # file csv con log + hash
-    # orari con timezone
+    # test su più media in csv
     # Whatsappscraper_v.1
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
 
     # done:
+    # orari con timezone
     # media scaricato che rimandi al media
     # zip con tutte le conversaz
     # zip con tutti i media
