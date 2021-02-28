@@ -1031,8 +1031,8 @@ if __name__ == '__main__':
     # TODO:
 
 
-    # file excel con log + hash ---> in progress
-    # file csv con log + hash
+
+
     # test su più media in csv
     # Whatsappscraper_v.1
     # 3) commentare codice + alleggerire codice (pulizia)  -- opzionale: test sonar
@@ -1043,3 +1043,5 @@ if __name__ == '__main__':
     # zip con tutte le conversaz
     # zip con tutti i media
     # 1) gestire data e ora in anteprima con fuso orario e formato orario
+    # file excel con log + hash ---> in progress
+    # file csv con log + hash
