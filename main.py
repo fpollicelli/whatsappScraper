@@ -565,7 +565,6 @@ def getChatLabels():
 
     inds = []
     seen = set()
-    print(chatName)
     for i, ele in enumerate(chatName):
         if ele not in seen:
             inds.append(i)
