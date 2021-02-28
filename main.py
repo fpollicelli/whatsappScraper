@@ -209,12 +209,14 @@ def readMessages(name, driver):
 
         try:
             try:  # SALVATAGGIO DI DOC IN CSV
-                element = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, '//button[contains(@title,"Scarica")]'))
-                )
                 download = messages.find_element_by_xpath(
                     ".//button[contains(@title,'Scarica')]")
 
+            except:
+                pass
+            else:
+                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                info = info.get_attribute("data-pre-plain-text")
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -231,21 +233,20 @@ def readMessages(name, driver):
                     download = download[10:-1]
                 if len(download) > 90:
                     download = download[:90]
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Doc: " + download + '...'))
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Doc: " + download + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Doc: " + download))
-                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Doc: " + download
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Doc: " + download))
+                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Doc: " + download
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
-            except:
-                pass
 
             try:  # SALVATAGGIO DI AUDIO IN CSV
 
                 audio = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 # WhatsApp Ptt 2021-02-17 at 17.17.26.ogg
-
+                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                info = info.get_attribute("data-pre-plain-text")
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -276,10 +277,45 @@ def readMessages(name, driver):
                 f.write('\n')
             except:
                 pass
+            else:
+                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                info = info.get_attribute("data-pre-plain-text")
+                oraData = info[info.find('[') + 1: info.find(']') + 1]
+                if language == 'english':
+                    data = oraData[oraData.find(' ') + 4: oraData.find(']')]
+                else:
+                    data = oraData[oraData.find(' ') + 1: oraData.find(']')]
+                ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                mittente = info.split(']')[1].strip()
+                mittente = mittente.split(':')[0].strip()
+
+                audio_name = "WhatsApp Ptt " + data + " at " + ora + ".ogg"
+                if len(list_audio) == 0:
+                    list_audio.append(audio_name)
+                    count_audio += 1
+                else:
+                    for audioname in list_audio:
+                        if audioname == audio_name:
+                            audio_name = audio_name + " (" + count_audio + ")"
+                    list_audio.append(audio_name)
+                    count_audio += 1
+                if len(audio_name) > 90:
+                    audio_name = audio_name[:90]
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Audio: " + audio_name + '...'))
+                else:
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Audio: " + audio_name))
+                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Audio: " + audio_name
+                window.update()
+                f.write(finalMessage)
+                f.write('\n')
 
             try:  # SALVATAGGIO DI IMG IN CSV
                 img = messages.find_element_by_xpath(".//img[contains(@src,'blob')]")
-
+            except:
+                pass
+            else:
+                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                info = info.get_attribute("data-pre-plain-text")
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -290,6 +326,7 @@ def readMessages(name, driver):
                 mittente = mittente.split(':')[0].strip()
 
                 img_name = "WhatsApp Image " + data + " at " + ora + ".jpeg"
+
                 if len(list_img) == 0:
                     list_img.append(list_img)
                     count_img += 1
@@ -301,19 +338,23 @@ def readMessages(name, driver):
                     count_img += 1
                 if len(img_name) > 90:
                     img_name = img_name[:90]
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + img_name + '...'))
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Img: " + img_name + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + img_name))
-                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Img: " + img_name
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Img: " + img_name))
+                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Img: " + img_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
-            except:
-                pass
+
 
             try:  # SALVATAGGIO DI VIDEO IN CSV
                 video = messages.find_element_by_xpath(".//span[contains(@data-testid,'media')]")
 
+            except:
+                pass
+            else:
+                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
+                info = info.get_attribute("data-pre-plain-text")
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -332,17 +373,16 @@ def readMessages(name, driver):
                         if videoname == video_name:
                             video_name = video_name + " (" + count_video + ")"
                     list_img.append(video_name)
+                    count_video += 1
                 if len(video_name) > 90:
                     video_name = video_name[:90]
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + video_name + '...'))
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Video: " + video_name + '...'))
                 else:
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Img: " + video_name))
-                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Img: " + video_name
+                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Video: " + video_name))
+                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Video: " + video_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
-            except:
-                pass
 
             message = messages.find_element_by_xpath(
                 ".//span[contains(@class,'selectable-text copyable-text')]"
@@ -872,6 +912,7 @@ def moveArchiviate(driver):
     archiv.click()
     time.sleep(2)
     chatLabels = []
+
     recentList = driver.find_elements_by_xpath(
         '//*[@id="app"]/div/div/div[2]/div[1]/span/div/span/div/div/div[1]/div/div/div')
     for label in recentList:
