@@ -39,7 +39,7 @@ sheet_hash.write(0, 0, 'File')
 sheet_hash.write(0, 1, 'Timestamp')
 sheet_hash.write(0, 2, 'MD5')
 sheet_hash.write(0, 3, 'SHA512')
-nRow = 1
+nRow = 2
 with open("hashing.csv", "w") as file_hash:
     file_hash.write("File,timestamp,md5,sha512")
 
@@ -110,16 +110,17 @@ def openChrome():
         log_dict[getDateTime()] = text
         window.update()
         f_hash = open('hashing.csv', 'a', encoding='utf-8')
+        if (save_media.get() == 1):
+            nRow = 3
         for key, value in log_dict.items():
             f_hash.write('\n' + value + ',' + key + ',,')
-            sheet1.write(nRow, 0, value)
-            sheet1.write(nRow, 1, key)
+            sheet_hash.write(nRow, 0, value)
+            sheet_hash.write(nRow, 1, key)
             nRow = nRow + 1
         f_hash.flush()
         f_hash.close()
-
         driver.close()
-        wb.save(pyExePath + '\log.xls')
+        wb_hash.save('log.xls')
 
     return driver
 
@@ -564,15 +565,17 @@ def getChatLabels():
     choose_label.configure(text="")
     window.update()
     f_hash = open('hashing.csv', 'a', encoding='utf-8')
+    if (save_media.get() == 1):
+        nRow = 3
     for key, value in log_dict.items():
-        f_hash.write("File,timestamp,md5,sha512")
-
-        sheet1.write(nRow, 0, value)
-        sheet1.write(nRow, 1, key)
+        f_hash.write('\n' + value + ',' + key + ',,')
+        sheet_hash.write(nRow, 0, value)
+        sheet_hash.write(nRow, 1, key)
         nRow = nRow + 1
     f_hash.flush()
     f_hash.close()
     driver.close()
+    wb_hash.save('log.xls')
     wb.save(pyExePath + '\log.xls')
     path = pyExePath + '/Scraped'
     create_zip(path + '/Chat/', 'chat.zip')
@@ -882,10 +885,10 @@ def disableEvent(event):
     return "break"
 
 
-it = ['Data (gg/mm/aaa)', 'Ora', 'Mittente', 'Messaggio', 'scraper pronto',
+it = ['Data (gg/mm/aaaa)', 'Ora', 'Mittente', 'Messaggio', 'scraper pronto',
       'Autori: Domenico Palmisano e Francesca Pollicelli', 'Opzioni',
       'Caricare lista contatti', 'Avvia scraper', 'Scraping chat archiviate', 'Cartella di destinazione']
-en = ['Date (mm/gg/aaa)', 'Time', 'Sender', 'Message', 'scraper ready',
+en = ['Date (mm/gg/aaaa)', 'Time', 'Sender', 'Message', 'scraper ready',
       'Authors: Domenico Palmisano and Francesca Pollicelli', 'Options',
       'Load contact list', 'Start scraper', 'Scraping archived chats', 'Destination folder']
 
