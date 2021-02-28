@@ -32,6 +32,13 @@ language = 'italian'
 window.iconbitmap('whatsapp.ico')
 wb = Workbook()
 sheet1 = wb.add_sheet('Hash')
+wb_hash = Workbook()
+
+sheet_hash = wb_hash.add_sheet('Hash')
+sheet_hash.write(0, 0, 'File')
+sheet_hash.write(0, 1, 'Timestamp')
+sheet_hash.write(0, 2, 'MD5')
+sheet_hash.write(0, 3, 'SHA512')
 nRow = 1
 with open("hashing.csv", "w") as file_hash:
     file_hash.write("File,timestamp,md5,sha512")
@@ -928,8 +935,6 @@ def create_zip(directory, zip_name):
 
 
 def zip_hasher(zip_name,row):
-    print(zip_name)
-    wb_hash = Workbook()
     dateTime = getDateTime()
     with open(zip_name, "rb") as f:
         hash_md5 = hashlib.md5()
@@ -939,15 +944,10 @@ def zip_hasher(zip_name,row):
             hash_sha512.update(chunk)
     md5_digest = hash_md5.hexdigest()
     sha512_digest = hash_sha512.hexdigest()
-    sheet1 = wb_hash.add_sheet('Hash')
-    sheet1.write(0, 0, 'File')
-    sheet1.write(row, 0, zip_name)
-    sheet1.write(0, 1, 'Timestamp')
-    sheet1.write(row, 1, dateTime)
-    sheet1.write(0, 2, 'MD5')
-    sheet1.write(row, 2, md5_digest)
-    sheet1.write(0, 3, 'SHA512')
-    sheet1.write(row, 3, sha512_digest)
+    sheet_hash.write(row, 0, zip_name)
+    sheet_hash.write(row, 1, dateTime)
+    sheet_hash.write(row, 2, md5_digest)
+    sheet_hash.write(row, 3, sha512_digest)
     wb_hash.save('log.xls')
     return
 
