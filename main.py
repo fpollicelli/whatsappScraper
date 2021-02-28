@@ -193,6 +193,7 @@ def readMessages(name, driver):
                 pass
 
         try:
+
             try:  # SALVATAGGIO DI DOC IN CSV
                 download = messages.find_element_by_xpath(
                     ".//button[contains(@title,'Scarica')]")
@@ -200,8 +201,7 @@ def readMessages(name, driver):
             except:
                 pass
             else:
-                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
-                info = info.get_attribute("data-pre-plain-text")
+
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -230,8 +230,6 @@ def readMessages(name, driver):
 
                 audio = messages.find_element_by_xpath(".//span[contains(@data-testid,'ptt-status')]")
                 # WhatsApp Ptt 2021-02-17 at 17.17.26.ogg
-                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
-                info = info.get_attribute("data-pre-plain-text")
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -334,12 +332,9 @@ def readMessages(name, driver):
 
             try:  # SALVATAGGIO DI VIDEO IN CSV
                 video = messages.find_element_by_xpath(".//span[contains(@data-testid,'media')]")
-
             except:
                 pass
             else:
-                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
-                info = info.get_attribute("data-pre-plain-text")
                 oraData = info[info.find('[') + 1: info.find(']') + 1]
                 if language == 'english':
                     data = oraData[oraData.find(' ') + 4: oraData.find(']')]
@@ -631,12 +626,14 @@ def getChatLabels():
         nRow = nRow + 1
     driver.close()
     wb.save(pyExePath+'\log.xls')
-    path = pyExePath + '/Scraped'
+    path = pyExePath + '/Scraped/Chat'
     create_zip(path, 'chat.zip')
     zip_hasher('chat.zip')
     if save_media.get() == 1:
+        path = pyExePath + '/Scraped/Media'
         create_zip(path, 'media.zip')
         zip_hasher('media.zip')
+    path = pyExePath + '/Scraped'
     shutil.rmtree(path)
     open_folder = os.path.realpath(pyExePath)
     os.startfile(open_folder)
