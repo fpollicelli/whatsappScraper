@@ -549,10 +549,11 @@ def getChatLabels():
     for list in recentList:
         chatLabels.append(list)
         label = list.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
+        #time
         chatName.append(label[0].get_attribute('title'))
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
                                reverse=False)
-    #ne ho 17
+    #ne ho n
     for x in chatLabels:
         driver.execute_script("arguments[0].scrollIntoView();", x)
         recentList_scrolled = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
@@ -562,18 +563,14 @@ def getChatLabels():
         label = list_scrolled.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
         chatName.append(label[0].get_attribute('title'))
 
-    for x in chatName:
-        print("nome trovato in chatname:", x)
-
-    for i in chatLabels:
-        label = i.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
-        name = label[0].get_attribute('title')
-        print("nome trovato in chatlabel:",name)
-        for name_Chatname in chatName:
-            if name == name_Chatname:
-                chatLabels.remove(i)
-
-    print(len(chatLabels))
+    inds = []
+    seen = set()
+    print(chatName)
+    for i, ele in enumerate(chatName):
+        if ele not in seen:
+            inds.append(i)
+        seen.add(ele)
+    chatLabels = [i for j, i in enumerate(chatLabels) if j in inds]
 
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
