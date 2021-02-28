@@ -33,7 +33,7 @@ log_dict = {}
 language = 'italian'
 window.iconbitmap('whatsapp.ico')
 wb = Workbook()
-sheet1 = wb.add_sheet('Hash')
+sheet1 = wb.add_sheet('Hash',cell_overwrite_ok=True)
 nRow=4
 
 sheet1.write(0, 0, 'WhatsappScraper_v.1')
@@ -85,7 +85,7 @@ def openChrome():
     # CREAZIONE PROFILO SOLO PER DEBUG
     # '''
     options.add_argument(
-        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
+        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 4")  # crea un nuovo profilo utente in chrome per scansionare il qw
     # '''
     args = ["hide_console", ]
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
@@ -799,18 +799,18 @@ def saveDoc(name, driver):
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        element = WebDriverWait(driver, 5).until(
+        element = WebDriverWait(driver, 15).until(
             EC.element_to_be_clickable((By.XPATH,
                                         "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
         )
-
-    except:
-        noMedia = True
-    else:
         doc_list = driver.find_elements_by_xpath(
             "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         for document in doc_list:
             document.click()
+            time.sleep(4)
+
+    except:
+        noMedia = True
     return
 
 
