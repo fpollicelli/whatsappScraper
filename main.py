@@ -703,13 +703,13 @@ def saveMedia(name, driver):
     info = driver.find_element_by_xpath('//*[@id="main"]')
     try:
         if language == 'italian':
-            element = WebDriverWait(driver, 5).until(
+            element = WebDriverWait(driver, 3).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Info gruppo')]"))
             )
             info = driver.find_element_by_xpath("//div[contains(@aria-label,'Info gruppo')]")
             info.click()
         else:
-            element = WebDriverWait(driver, 5).until(
+            element = WebDriverWait(driver, 3).until(
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Group info')]"))
             )
             info = driver.find_element_by_xpath("//div[contains(@aria-label,'Group info')]")
@@ -717,13 +717,13 @@ def saveMedia(name, driver):
     except:
         try:
             if language == 'italian':
-                element = WebDriverWait(driver, 5).until(
+                element = WebDriverWait(driver, 3).until(
                     EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Info contatto')]"))
                 )
                 info = driver.find_element_by_xpath("//div[contains(@aria-label,'Info contatto')]")
                 info.click()
             else:
-                element = WebDriverWait(driver, 5).until(
+                element = WebDriverWait(driver, 3).until(
                     EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Contact info')]"))
                 )
                 info = driver.find_element_by_xpath("//div[contains(@aria-label,'Contact info')]")
@@ -731,13 +731,13 @@ def saveMedia(name, driver):
         except:
             try:
                 if language == 'italian':
-                    element = WebDriverWait(driver, 5).until(
+                    element = WebDriverWait(driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Info lista broadcast')]"))
                     )
                     info = driver.find_element_by_xpath("//div[contains(@aria-label,'Info lista broadcast')]")
                     info.click()
                 else:
-                    element = WebDriverWait(driver, 5).until(
+                    element = WebDriverWait(driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, "//div[contains(@aria-label,'Broadcast list info')]"))
                     )
                     info = driver.find_element_by_xpath("//div[contains(@aria-label,'Broadcast list info')]")
@@ -799,16 +799,18 @@ def saveDoc(name, driver):
     if not os.path.exists(dir):
         os.makedirs(dir)
     try:
-        element = WebDriverWait(driver, 20).until(
+        element = WebDriverWait(driver, 5).until(
             EC.element_to_be_clickable((By.XPATH,
                                         "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div"))
         )
+
+    except:
+        noMedia = True
+    else:
         doc_list = driver.find_elements_by_xpath(
             "//*[@id='app']/div/div/div[2]/div[3]/span/div/span/div/div[2]/span/div/div/div/div/div/div/div/div")
         for document in doc_list:
             document.click()
-    except:
-        noMedia = True
     return
 
 
