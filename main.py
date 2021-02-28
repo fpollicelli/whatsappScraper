@@ -17,6 +17,7 @@ import hashlib
 import tkinter as tk
 import threading
 from xlwt import Workbook
+import pandas
 
 user = os.environ["USERNAME"]
 window = tk.Tk()
@@ -40,8 +41,6 @@ sheet_hash.write(0, 1, 'Timestamp')
 sheet_hash.write(0, 2, 'MD5')
 sheet_hash.write(0, 3, 'SHA512')
 nRow = 2
-with open("hashing.csv", "w") as file_hash:
-    file_hash.write("File,timestamp,md5,sha512")
 
 if not os.path.exists(pyExePath):
     os.makedirs(pyExePath)
@@ -109,16 +108,12 @@ def openChrome():
         output_label_2.configure(text=text)
         log_dict[getDateTime()] = text
         window.update()
-        f_hash = open('hashing.csv', 'a', encoding='utf-8')
         if (save_media.get() == 1):
             nRow = 3
         for key, value in log_dict.items():
-            f_hash.write('\n' + value + ',' + key + ',,')
             sheet_hash.write(nRow, 0, value)
             sheet_hash.write(nRow, 1, key)
             nRow = nRow + 1
-        f_hash.flush()
-        f_hash.close()
         driver.close()
         wb_hash.save(pyExePath+'\log.xls')
 
@@ -432,10 +427,6 @@ def hashing(name, extension):
         for chunk in iter(lambda: f.read(4096), b""):
             has_sha512.update(chunk)
     sha512_digest = has_sha512.hexdigest()
-    with open("hashing.csv", "a") as hashingfile:
-
-        hashingfile.write('\n' + name + extension + ',' + dateTime + ',' + md5Digest + ',' + sha512_digest)
-
     sheet1.write(nRow, 0, name + extension)
     sheet1.write(nRow, 1, dateTime)
     sheet1.write(nRow, 2, md5Digest)
@@ -564,16 +555,12 @@ def getChatLabels():
     log_dict[getDateTime()] = text
     choose_label.configure(text="")
     window.update()
-    f_hash = open('hashing.csv', 'a', encoding='utf-8')
     if (save_media.get() == 1):
         nRow = 3
     for key, value in log_dict.items():
-        f_hash.write('\n' + value + ',' + key + ',,')
         sheet_hash.write(nRow, 0, value)
         sheet_hash.write(nRow, 1, key)
         nRow = nRow + 1
-    f_hash.flush()
-    f_hash.close()
     driver.close()
     wb_hash.save(pyExePath+'\log.xls')
     wb.save(pyExePath + '\log.xls')
@@ -586,6 +573,9 @@ def getChatLabels():
     path = os.path.realpath(path)
     os.startfile(path)
     del NAMES[:]
+
+    read_file = pandas.read_excel(r'D:\Magistrale\Sicurezza delle reti e dei sistemi distribuiti\Progetto Scraper Whatapp\log.xls')
+    read_file.to_csv(r'D:\Magistrale\Sicurezza delle reti e dei sistemi distribuiti\Progetto Scraper Whatapp\hashing.csv', index=None, header=True)
     return
 
 
@@ -951,11 +941,6 @@ def zip_hasher(zip_name,row):
     sheet_hash.write(row, 1, dateTime)
     sheet_hash.write(row, 2, md5_digest)
     sheet_hash.write(row, 3, sha512_digest)
-
-    f_hash = open('hashing.csv', 'a', encoding='utf-8')
-    f_hash.write(zip_name+","+dateTime+","+md5_digest+","+sha512_digest)
-    f_hash.flush()
-    f_hash.close()
     wb_hash.save(pyExePath+'\log.xls')
     return
 
