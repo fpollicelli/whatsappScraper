@@ -458,6 +458,8 @@ def getChatLabels():
     tree.delete(*tree.get_children())
     driver = openChrome()
     chatLabels = []
+    chatName = []
+    chatLabels_nodups = []
     archiviat = 0
     toArch = []
     detectLanguage(driver)
@@ -543,8 +545,36 @@ def getChatLabels():
         chatLabelsDeArch = moveArchiviate(driver)
 
     recentList = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
-    for label in recentList:
-        chatLabels.append(label)
+
+    for list in recentList:
+        chatLabels.append(list)
+        label = list.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
+        chatName.append(label[0].get_attribute('title'))
+    chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
+                               reverse=False)
+    #ne ho 17
+    for x in chatLabels:
+        driver.execute_script("arguments[0].scrollIntoView();", x)
+        recentList_scrolled = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
+    #li ho scrollati
+    for list_scrolled in recentList_scrolled:
+        chatLabels.append(list_scrolled)
+        label = list_scrolled.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
+        chatName.append(label[0].get_attribute('title'))
+
+    for x in chatName:
+        print("nome trovato in chatname:", x)
+
+    for i in chatLabels:
+        label = i.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
+        name = label[0].get_attribute('title')
+        print("nome trovato in chatlabel:",name)
+        for name_Chatname in chatName:
+            if name == name_Chatname:
+                chatLabels.remove(i)
+
+    print(len(chatLabels))
+
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]), reverse=False)
     iterChatList(chatLabels, driver)
     if (archiviate.get() == 1):
