@@ -1,4 +1,4 @@
-<img src="https://i.ibb.co/fY3TjhD/Immagine1.png" alt="Immagine1" border="0"></a>
+<img src="https://i.ibb.co/fY3TjhD/Immagine1.png" alt="Logo" border="0">
 
 # WhatsApp Scraper
 
@@ -64,7 +64,7 @@ Per ogni funzionalità è stata programmata una funzione che automatizza le azio
 
 Il frontend è un&#39;interfaccia grafica realizzata tramite libreria TKinter. L&#39;obiettivo dell&#39;interfaccia è quello di fornire un&#39;anteprima del risultato di scraping e restituire dei feedback all&#39;utente tramite log. Dall&#39;interfaccia è possibile configurare le opzioni dello scraper, ovvero scegliere se salvare anche i media e dove salvarli, se effettuare lo scraping solo di una lista ristretta di contatti o se eseguire lo scraping di tutte le chat, eventualmente anche quelle archiviate. Vi è inoltre la possibilità di settare la lingua dell&#39;interfaccia stessa.
 
-![img](RackMultipart20210302-4-19ub3a9_html_66cb825c0f48be03.png)
+<img src="https://i.ibb.co/yF51wt8/Immagine2.png" alt="Frontend" border="0">
 
 # **FUNZIONALITÀ**
 
@@ -86,7 +86,7 @@ Spuntando l&#39;apposito checkbox nell&#39;interfaccia grafica, l&#39;applicazio
  Lo scraping da lista contatti gestisce anche le chat archiviate: se non sono presenti fra le chat principali, vengono ricercate in archivio e gestite come nella funzione di scraping di contatti archiviati.
  Non è necessario inserire emoji nel file, le chat con questo tipo di caratteri speciali verranno selezionate correttamente anche omettendoli.
 
-![](RackMultipart20210302-4-19ub3a9_html_7c050ade4bf9b4d1.png) ![](RackMultipart20210302-4-19ub3a9_html_d6c6be3e282efaa1.png)
+<img src="https://i.ibb.co/fr7Lkm0/Immagine3.png" alt="Lista contatti" border="0">
 
 ## **Scraping media**
 
@@ -103,29 +103,21 @@ Tramite l&#39;interfaccia è possibile scegliere una destinazione in cui salvare
 
 Terminato lo scraping, la cartella di progetto (o quella selezionata dall&#39;utente) verrà aperta automaticamente.
 
-![](RackMultipart20210302-4-19ub3a9_html_e928cd0130c4ffd0.png)
+<img src="https://i.ibb.co/SXn3rpK/Immagine4.png" alt="Destinazione" border="0">
 
 ## **Generazione log**
 
 Durante lo scraping è possibile consultare il log dall&#39;interfaccia grafica. Il log viene mostrato per segnalare eventuali errori nello scraping e per notificare l&#39;utente i progressi e le fasi del processo.
 
-![](RackMultipart20210302-4-19ub3a9_html_fcaff69cd3cca3c9.png)
+<img src="https://i.ibb.co/Qcjxvrj/Immagine5.png" alt="Log" border="0">
 
 A scraping concluso, i messaggi di log vengono salvati nei file log.xsl e hashing.csv, comprensivi di timestamp con data, orario e fuso orario.
-
-![](RackMultipart20210302-4-19ub3a9_html_76572c70404b2857.png)
 
 ## **Multilingua**
 
 WhatsApp Scraper effettua lo scraping dei messaggi tenendo conto della lingua impostata su WhatsApp Web (la quale coincide con la lingua del telefono dell&#39;utilizzatore).
 
-![](RackMultipart20210302-4-19ub3a9_html_419fbbb6b15040fc.png)
-
 Questa gestione si rende necessaria non solo per la corretta selezione degli XPath, ma anche nello scraping delle date di invio dei messaggi, poiché vengono fornite in due formati diversi a seconda che la lingua sia l&#39;italiano o l&#39;inglese.
-
-Italiano   Inglese
-
-![](RackMultipart20210302-4-19ub3a9_html_1ea63cd2a925314.png)             ![](RackMultipart20210302-4-19ub3a9_html_620cbc248d3b9206.png)
 
 Indipendentemente dalla lingua del telefono, è possibile modificare quella dell&#39;interfaccia grafica e dei messaggi di log, scegliendo fra italiano o inglese.
 
@@ -137,13 +129,11 @@ Poiché il codice si fonda sugli XPath degli elementi presenti in WhatsApp Web, 
 
 Prendendo come esempio lo scraping dei messaggi di un contatto, dovremo attendere che tutti i messaggi siano stati caricati per poter procedere con lo scraping, semplicemente perchè, altrimenti, l&#39;XPath del prossimo messaggio non sarebbe disponibile.
 
-![](RackMultipart20210302-4-19ub3a9_html_aa9c90bac2d27b6c.png)
+<img src="https://i.ibb.co/Qcjxvrj/Immagine5.png" alt="Caricamenti" border="0">
 
 Per risolvere questo problema, viene utilizzata la classe WebDriverWait fornita da Selenium. Per ogni XPath, si attenderà finché l&#39;elemento con tale XPath non verrà localizzato. Superato un certo limite di tempo, verrà sollevata un&#39;eccezione.
 
-![](RackMultipart20210302-4-19ub3a9_html_38d1d90b0a86f563.png)
-
-![](RackMultipart20210302-4-19ub3a9_html_dfaaf26914cad308.png)
+<img src="https://i.ibb.co/MNCFst2/Immagine8.png" alt="Caricati" border="0">
 
 Nonostante questa gestione conveniente dei caricamenti, alcune connessioni potrebbero richiedere tempi d&#39;attesa più lunghi e generare errori anche se l&#39;elemento sarà presente a breve.
 
