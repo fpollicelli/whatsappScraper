@@ -129,7 +129,7 @@ Poiché il codice si fonda sugli XPath degli elementi presenti in WhatsApp Web, 
 
 Prendendo come esempio lo scraping dei messaggi di un contatto, dovremo attendere che tutti i messaggi siano stati caricati per poter procedere con lo scraping, semplicemente perchè, altrimenti, l&#39;XPath del prossimo messaggio non sarebbe disponibile.
 
-<img src="https://i.ibb.co/Qcjxvrj/Immagine5.png" alt="Caricamenti" border="0">
+<img src="https://i.ibb.co/rQYMhNp/Immagine6.png" alt="Caricamenti" border="0">
 
 Per risolvere questo problema, viene utilizzata la classe WebDriverWait fornita da Selenium. Per ogni XPath, si attenderà finché l&#39;elemento con tale XPath non verrà localizzato. Superato un certo limite di tempo, verrà sollevata un&#39;eccezione.
 
