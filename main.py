@@ -2,6 +2,8 @@ import shutil
 from datetime import datetime, date
 from time import gmtime, strftime
 import zipfile
+import re
+import glob
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
@@ -20,6 +22,7 @@ import threading
 from xlwt import Workbook
 import pandas
 
+orari = []
 user = os.environ["USERNAME"]
 window = tk.Tk()
 window.geometry("900x625")
@@ -33,8 +36,12 @@ log_dict = {}
 language = 'italian'
 window.iconbitmap('whatsapp.ico')
 wb = Workbook()
-sheet1 = wb.add_sheet('Hash',cell_overwrite_ok=True)
-nRow=4
+sheet1 = wb.add_sheet('Hash', cell_overwrite_ok=True)
+nRow = 4
+countVideo = 1
+countImage = 1
+countAudio = 1
+countDoc = 1
 
 sheet1.write(0, 0, 'WhatsappScraper_v.1')
 sheet1.write(0, 1, 'https://github.com/fpollicelli/whatsappScraper.git')
@@ -44,7 +51,7 @@ sheet1.write(1, 0, 'File')
 sheet1.write(1, 1, 'Timestamp')
 sheet1.write(1, 2, 'MD5')
 sheet1.write(1, 3, 'SHA512')
-wb.save(pyExePath + '\log.xls')
+wb.save(pyExePath + '\\log.xls')
 
 
 def detectLanguage(driver):
@@ -72,9 +79,10 @@ def findChromeDriver():
 
 def openChrome():
     global nRow
+    x = pyExePath.replace('/', '\\')
     options = webdriver.ChromeOptions()  # stabilire connessione con whatsapp web
     options.add_experimental_option("prefs", {
-        "download.default_directory": pyExePath + "\\Scraped\\Media",
+        "download.default_directory": r"" + x + "\Scraped\Media",
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
@@ -85,7 +93,7 @@ def openChrome():
     # CREAZIONE PROFILO SOLO PER DEBUG
     # '''
     options.add_argument(
-        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 4")  # crea un nuovo profilo utente in chrome per scansionare il qw
+        "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
     # '''
     args = ["hide_console", ]
     driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
@@ -109,20 +117,18 @@ def openChrome():
             sheet1.write(nRow, 1, key)
             nRow = nRow + 1
         driver.close()
-        wb.save(pyExePath + '\log.xls')
+        wb.save(pyExePath + '\\log.xls')
 
     return driver
 
 
 def readMessages(name, driver):
+    global countVideo
+    global countImage
+    global countAudio
+    global countDoc
     timezone = strftime("GMT%z", gmtime())
     timezone = timezone[:-2]
-    list_audio = []
-    list_img = []
-    list_video = []
-    count_audio = 0
-    count_img = 0
-    count_video = 0
     if language == 'italian':
         text = "scraping dei messaggi in corso..."
     else:
@@ -148,6 +154,7 @@ def readMessages(name, driver):
             driver.find_element_by_xpath("//*[@id='main']/div[3]/div/div").send_keys(Keys.CONTROL + Keys.HOME)
 
     messageContainer = driver.find_elements_by_xpath("//div[contains(@class,'message-')]")
+
     for messages in messageContainer:
         if (save_media.get() == 1):
             if language == 'italian':
@@ -208,6 +215,7 @@ def readMessages(name, driver):
                 else:
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                 ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                orari.append(ora)
                 mittente = info.split(']')[1].strip()
                 mittente = mittente.split(':')[0].strip()
 
@@ -236,61 +244,19 @@ def readMessages(name, driver):
                 else:
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                 ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                orari.append(ora)
                 mittente = info.split(']')[1].strip()
                 mittente = mittente.split(':')[0].strip()
 
-                audio_name = "WhatsApp Ptt " + data + " at " + ora + ".ogg"
-                if len(list_audio) == 0:
-                    list_audio.append(audio_name)
-                    count_audio += 1
-                else:
-                    for audioname in list_audio:
-                        if audioname == audio_name:
-                            audio_name = audio_name + " (" + count_audio + ")"
-                    list_audio.append(audio_name)
-                    count_audio += 1
-                if len(audio_name) > 90:
-                    audio_name = audio_name[:90]
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Audio: " + audio_name + '...'))
-                else:
-                    tree.insert("", 0, values=(data, ora+" "+timezone, mittente, "Audio: " + audio_name))
-                finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + "Audio: " + audio_name
+                audio_name = "WhatsApp Audio " + str(countAudio) + ".ogg"
+                countAudio = countAudio + 1
+                tree.insert("", 0, values=(data, ora + " " + timezone, mittente, audio_name))
+                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Audio: " + audio_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
             except:
                 pass
-            else:
-                info = messages.find_element_by_xpath(".//div[contains(@data-pre-plain-text,'[')]")
-                info = info.get_attribute("data-pre-plain-text")
-                oraData = info[info.find('[') + 1: info.find(']') + 1]
-                if language == 'english':
-                    data = oraData[oraData.find(' ') + 4: oraData.find(']')]
-                else:
-                    data = oraData[oraData.find(' ') + 1: oraData.find(']')]
-                ora = oraData[oraData.find('[') + 1: oraData.find(',')]
-                mittente = info.split(']')[1].strip()
-                mittente = mittente.split(':')[0].strip()
-
-                audio_name = "WhatsApp Ptt " + data + " at " + ora + ".ogg"
-                if len(list_audio) == 0:
-                    list_audio.append(audio_name)
-                    count_audio += 1
-                else:
-                    for audioname in list_audio:
-                        if audioname == audio_name:
-                            audio_name = audio_name + " (" + count_audio + ")"
-                    list_audio.append(audio_name)
-                    count_audio += 1
-                if len(audio_name) > 90:
-                    audio_name = audio_name[:90]
-                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Audio: " + audio_name + '...'))
-                else:
-                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Audio: " + audio_name))
-                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Audio: " + audio_name
-                window.update()
-                f.write(finalMessage)
-                f.write('\n')
 
             try:  # SALVATAGGIO DI IMG IN CSV
                 img = messages.find_element_by_xpath(".//img[contains(@src,'blob')]")
@@ -305,30 +271,18 @@ def readMessages(name, driver):
                 else:
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                 ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                orari.append(ora)
                 mittente = info.split(']')[1].strip()
                 mittente = mittente.split(':')[0].strip()
 
-                img_name = "WhatsApp Image " + data + " at " + ora + ".jpeg"
+                img_name = "WhatsApp Image " + str(countImage) + ".jpeg"
+                countImage = countImage + 1
+                tree.insert("", 0, values=(data, ora + " " + timezone, mittente, img_name))
 
-                if len(list_img) == 0:
-                    list_img.append(list_img)
-                    count_img += 1
-                else:
-                    for imgage in list_img:
-                        if imgage == img_name:
-                            img_name = img_name + " (" + count_img + ")"
-                    list_img.append(img_name)
-                    count_img += 1
-                if len(img_name) > 90:
-                    img_name = img_name[:90]
-                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Img: " + img_name + '...'))
-                else:
-                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Img: " + img_name))
                 finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Img: " + img_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
-
 
             try:  # SALVATAGGIO DI VIDEO IN CSV
                 video = messages.find_element_by_xpath(".//span[contains(@data-testid,'media')]")
@@ -341,25 +295,15 @@ def readMessages(name, driver):
                 else:
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                 ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                orari.append(ora)
                 mittente = info.split(']')[1].strip()
                 mittente = mittente.split(':')[0].strip()
 
-                video_name = "WhatsApp Video " + data + " at " + ora + ".mp4"
-                if len(list_video) == 0:
-                    list_img.append(list_img)
-                    count_video += 1
-                else:
-                    for videoname in list_video:
-                        if videoname == video_name:
-                            video_name = video_name + " (" + count_video + ")"
-                    list_img.append(video_name)
-                    count_video += 1
-                if len(video_name) > 90:
-                    video_name = video_name[:90]
-                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Video: " + video_name + '...'))
-                else:
-                    tree.insert("", 0, values=(data, ora + " " + timezone, mittente, "Video: " + video_name))
-                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + "Video: " + video_name
+                video_name = "WhatsApp Video " + str(countVideo) + ".mp4"
+                countVideo = countVideo + 1
+
+                tree.insert("", 0, values=(data, ora + " " + timezone, mittente, video_name))
+                finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + video_name
                 window.update()
                 f.write(finalMessage)
                 f.write('\n')
@@ -381,15 +325,16 @@ def readMessages(name, driver):
             else:
                 data = oraData[oraData.find(' ') + 1: oraData.find(']')]
             ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+            orari.append(ora)
             mittente = info.split(']')[1].strip()
             mittente = mittente.split(':')[0].strip()
             message = message.replace("\n", " ")
             if len(message) > 90:
                 trimMessage = message[:90]
-                tree.insert("", 0, values=(data, ora+" "+timezone, mittente, trimMessage + '...'))
+                tree.insert("", 0, values=(data, ora + " " + timezone, mittente, trimMessage + '...'))
             else:
-                tree.insert("", 0, values=(data, ora+" "+timezone, mittente, message))
-            finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + message
+                tree.insert("", 0, values=(data, ora + " " + timezone, mittente, message))
+            finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + message
             window.update()
             f.write(finalMessage)
             f.write('\n')
@@ -405,16 +350,17 @@ def readMessages(name, driver):
 
                     oraData = info[info.find('[') + 1: info.find(']') + 1]
                     ora = oraData[oraData.find('[') + 1: oraData.find(',')]
+                    orari.append(ora)
                     data = oraData[oraData.find(' ') + 1: oraData.find(']')]
                     mittente = info.split(']')[1].strip()
                     mittente = mittente.split(':')[0].strip()
                     message = message.replace("\n", " ")
                     if len(message) > 90:
                         trimMessage = message[:90]
-                        tree.insert("", 0, values=(data, ora+" "+timezone, mittente, trimMessage + '...'))
+                        tree.insert("", 0, values=(data, ora + " " + timezone, mittente, trimMessage + '...'))
                     else:
-                        tree.insert("", 0, values=(data, ora+" "+timezone, mittente, message))
-                    finalMessage = data + "," + ora+" "+timezone + "," + mittente + "," + message
+                        tree.insert("", 0, values=(data, ora + " " + timezone, mittente, message))
+                    finalMessage = data + "," + ora + " " + timezone + "," + mittente + "," + message
                     window.update()
                     f.write(finalMessage)
                     f.write('\n')
@@ -443,44 +389,45 @@ def getDateTime():
     return dateTime
 
 
-
 def getChatLabels():
     global nRow
+    if choose_label["text"] == '':
+        del NAMES[:]
     if language == 'italian':
         text = "apertura di WhatsApp Web in corso..."
     else:
         text = 'opening WhatsApp Web...'
     try:
-        f = open(pyExePath+"/chat.zip", 'r')
+        f = open(pyExePath + "\\chat.zip", 'r')
     except:
         pass
     else:
         f.close()
-        os.remove(pyExePath + "/chat.zip")
+        os.remove(pyExePath + "\\chat.zip")
 
     try:
-        f = open(pyExePath+"/hashing.csv", 'r')
+        f = open(pyExePath + "\\hashing.csv", 'r')
     except:
         pass
     else:
         f.close()
-        os.remove(pyExePath + "/hashing.csv")
+        os.remove(pyExePath + "\\hashing.csv")
 
     try:
-        f = open(pyExePath+"/media.zip", 'r')
+        f = open(pyExePath + "\\media.zip", 'r')
     except:
         pass
     else:
         f.close()
-        os.remove(pyExePath + "/media.zip")
+        os.remove(pyExePath + "\\media.zip")
 
     try:
-        f = open(pyExePath+"/log.xls", 'r')
+        f = open(pyExePath + "\\log.xls", 'r')
     except:
         pass
     else:
         f.close()
-        os.remove(pyExePath + "/log.xls")
+        os.remove(pyExePath + "\\log.xls")
 
     log_dict.clear()
     output_label_2.configure(text=text)
@@ -507,6 +454,7 @@ def getChatLabels():
             menuDots.click()
             archiv = driver.find_element_by_xpath("//*[@id='side']/header/div[2]/div/span/div[3]/span/div/ul/li[4]/div")
             archiv.click()
+            time.sleep(2)
             for i in range(0, len(NAMES)):
                 try:
                     recent = driver.find_element_by_xpath(
@@ -514,6 +462,7 @@ def getChatLabels():
                     found = recent.find_element_by_xpath(".//span[contains(@title,'" + NAMES[i] + "')]")
                     actionChains = ActionChains(driver)
                     actionChains.context_click(found).perform()
+                    time.sleep(2)
                     estrai = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
                     estrai.click()
                     time.sleep(10)
@@ -557,11 +506,22 @@ def getChatLabels():
         window.update()
 
         driver.close()
-        wb.save(pyExePath + '\log.xls')
-        path = pyExePath
-        path = os.path.realpath(path)
-        os.startfile(path)
-        del NAMES[:]
+        wb.save(pyExePath + '\\log.xls')
+        path = pyExePath + '\\Scraped\\Chat'
+        create_zip(path, 'chat.zip')
+        zip_hasher('chat.zip')
+        if save_media.get() == 1:
+            path = pyExePath + '\\Scraped\\Media'
+            renameMedia()
+            create_zip(path, 'media.zip')
+            zip_hasher('media.zip')
+        path = pyExePath + '\\Scraped'
+        shutil.rmtree(path)
+        open_folder = os.path.realpath(pyExePath)
+        os.startfile(open_folder)
+
+        read_file = pandas.read_excel(pyExePath + '\\log.xls')
+        read_file.to_csv(pyExePath + '\\hashing.csv', index=None, header=True)
         return
 
     if (archiviate.get() == 1):
@@ -578,16 +538,17 @@ def getChatLabels():
 
     for list in recentList:
         chatLabels.append(list)
+        time.sleep(7)
         label = list.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
-        #time
+        time.sleep(5)
         chatName.append(label[0].get_attribute('title'))
     chatLabels.sort(key=lambda x: int(x.get_attribute('style').split("translateY(")[1].split('px')[0]),
-                               reverse=False)
-    #ne ho n
+                    reverse=False)
+    # ne ho n
     for x in chatLabels:
         driver.execute_script("arguments[0].scrollIntoView();", x)
         recentList_scrolled = driver.find_elements_by_xpath('//*[@id="pane-side"]/div[1]/div/div/div')
-    #li ho scrollati
+    # li ho scrollati
     for list_scrolled in recentList_scrolled:
         chatLabels.append(list_scrolled)
         label = list_scrolled.find_elements_by_xpath('.//span[contains(@dir,"auto")]')
@@ -625,22 +586,44 @@ def getChatLabels():
         sheet1.write(nRow, 1, key)
         nRow = nRow + 1
     driver.close()
-    wb.save(pyExePath+'\log.xls')
-    path = pyExePath + '/Scraped/Chat'
+    wb.save(pyExePath + '\\log.xls')
+    path = pyExePath + '\\Scraped\\Chat'
     create_zip(path, 'chat.zip')
     zip_hasher('chat.zip')
     if save_media.get() == 1:
-        path = pyExePath + '/Scraped/Media'
+        path = pyExePath + '\\Scraped\\Media'
+        renameMedia()
         create_zip(path, 'media.zip')
         zip_hasher('media.zip')
-    path = pyExePath + '/Scraped'
+    path = pyExePath + '\\Scraped'
     shutil.rmtree(path)
     open_folder = os.path.realpath(pyExePath)
     os.startfile(open_folder)
     del NAMES[:]
 
-    read_file = pandas.read_excel(pyExePath+'/log.xls')
-    read_file.to_csv(pyExePath+'/hashing.csv', index=None, header=True)
+    read_file = pandas.read_excel(pyExePath + '\\log.xls')
+    read_file.to_csv(pyExePath + '\\hashing.csv', index=None, header=True)
+    return
+
+
+def renameMedia():
+    audio = 1
+    image = 1
+    video = 1
+    os.chdir(pyExePath + '\\Scraped\\Media\\')
+    for file in glob.glob("*.ogg"):
+        os.rename(file, "WhatsApp Audio " + str(audio) + ".ogg")
+        audio = audio + 1
+
+    for file in glob.glob("*.jpeg"):
+        os.rename(file, "WhatsApp Image " + str(image) + ".jpeg")
+        image = image + 1
+
+    for file in glob.glob("*.mp4"):
+        os.rename(file, "WhatsApp Video " + str(video) + ".mp4")
+        video = video + 1
+    os.chdir(pyExePath)
+
     return
 
 
@@ -650,6 +633,7 @@ def archiviaChat(chatLabelsDeArch, driver):
         actionChains = ActionChains(driver)
         actionChains.context_click(chatElement).perform()
         archivia = driver.find_element_by_xpath('//*[@id="app"]/div/span[4]/div/ul/li[1]/div')
+        time.sleep(2)
         archivia.click()
         time.sleep(10)
     return
@@ -794,7 +778,7 @@ def saveDoc(name, driver):
 
     docs = driver.find_element_by_xpath(docs_xpath)
     docs.click()
-    dir = pyExePath + '/Scraped/Media/'
+    dir = pyExePath + '\\Scraped\\Media\\'
     noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -822,7 +806,7 @@ def saveImgVidAud(name, driver):
     output_label_2.configure(text=text)
     log_dict[getDateTime()] = text
     window.update()
-    dir = pyExePath + '/Scraped/Media/'
+    dir = pyExePath + '\\Scraped\\Media\\'
     noMedia = False
     if not os.path.exists(dir):
         os.makedirs(dir)
@@ -930,8 +914,6 @@ def moveArchiviate(driver):
     return chatNames
 
 
-
-
 def disableEvent(event):
     return "break"
 
@@ -939,14 +921,20 @@ def disableEvent(event):
 it = ['Data gg/mm/aaaa', 'Ora', 'Mittente', 'Messaggio', 'scraper pronto',
       'Autori: Domenico Palmisano e Francesca Pollicelli', 'Opzioni',
       'Caricare lista contatti', 'Avvia scraper', 'Scraping chat archiviate', 'Cartella di destinazione']
-en = ['Date mm/gg/aaaa', 'Time', 'Sender', 'Message', 'scraper ready',
+en = ['Date mm/dd/yyyy', 'Time', 'Sender', 'Message', 'scraper ready',
       'Authors: Domenico Palmisano and Francesca Pollicelli', 'Options',
       'Load contact list', 'Start scraper', 'Scraping archived chats', 'Destination folder']
 
 
 def change_language(index, value, op):
     if comboLang.get() == 'English':
-        tree.heading(0, text=en[0], anchor=tk.W)
+        if len(orari) != 0:
+            if 'AM' in orari[0] or 'PM' in orari[0]:
+                tree.heading(0, text='Date mm/dd/yyyy', anchor=tk.W)
+            else:
+                tree.heading(0, text='Date dd/mm/yyyy', anchor=tk.W)
+        else:
+            tree.heading(0, text=en[0], anchor=tk.W)
         tree.heading(1, text=en[1], anchor=tk.W)
         tree.heading(2, text=en[2], anchor=tk.W)
         tree.heading(3, text=en[3], anchor=tk.W)
@@ -959,7 +947,13 @@ def change_language(index, value, op):
         choose_dest.config(text=en[10])
 
     else:
-        tree.heading(0, text=it[0], anchor=tk.W)
+        if len(orari) != 0:
+            if 'AM' in orari[0] or 'PM' in orari[0]:
+                tree.heading(0, text='Data mm/gg/aaaa', anchor=tk.W)
+            else:
+                tree.heading(0, text='Data gg/mm/aaaa', anchor=tk.W)
+        else:
+            tree.heading(0, text=it[0], anchor=tk.W)
         tree.heading(1, text=it[1], anchor=tk.W)
         tree.heading(2, text=it[2], anchor=tk.W)
         tree.heading(3, text=it[3], anchor=tk.W)
@@ -980,7 +974,7 @@ def getfilesfrom(directory):
 
 
 def create_zip(directory, zip_name):
-    zf = zipfile.ZipFile(pyExePath+"/"+zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
+    zf = zipfile.ZipFile(pyExePath + "\\" + zip_name, mode='w', compression=zipfile.ZIP_DEFLATED)
     filestozip = getfilesfrom(directory)
     for afile in filestozip:
         zf.write(os.path.join(directory, afile), afile)
@@ -991,7 +985,7 @@ def create_zip(directory, zip_name):
 def zip_hasher(zip_name):
     global nRow
     dateTime = getDateTime()
-    with open(pyExePath+"/"+zip_name, "rb") as f:
+    with open(pyExePath + "\\" + zip_name, "rb") as f:
         hash_md5 = hashlib.md5()
         hash_sha512 = hashlib.sha512()
         for chunk in iter(lambda: f.read(4096), b""):
@@ -1005,19 +999,19 @@ def zip_hasher(zip_name):
             sheet1.write(2, 1, dateTime)
             sheet1.write(2, 2, md5_digest)
             sheet1.write(2, 3, sha512_digest)
-            wb.save(pyExePath+'\log.xls')
+            wb.save(pyExePath + '\\log.xls')
         else:
             sheet1.write(3, 0, zip_name)
             sheet1.write(3, 1, dateTime)
             sheet1.write(3, 2, md5_digest)
             sheet1.write(3, 3, sha512_digest)
-            wb.save(pyExePath+'\log.xls')
+            wb.save(pyExePath + '\\log.xls')
     else:
         sheet1.write(2, 0, zip_name)
         sheet1.write(2, 1, dateTime)
         sheet1.write(2, 2, md5_digest)
         sheet1.write(2, 3, sha512_digest)
-        wb.save(pyExePath + '\log.xls')
+        wb.save(pyExePath + '\\log.xls')
     return
 
 
