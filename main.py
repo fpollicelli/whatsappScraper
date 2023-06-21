@@ -96,7 +96,7 @@ def openChrome():
         "user-data-dir=C:\\Users\\" + user + "\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1")  # crea un nuovo profilo utente in chrome per scansionare il qw
     # '''
     args = ["hide_console", ]
-    driver = webdriver.Chrome(options=options, executable_path=findChromeDriver(), service_args=args)
+    driver = webdriver.Chrome(options=options)
 
     # apre whatsapp nel browser
     driver.get('http://web.whatsapp.com')
